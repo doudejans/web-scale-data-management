@@ -20,7 +20,7 @@ def setup_app(config_file: str = "config/config.yaml"):
     print(f"Starting {application_name}")
     print(f" - Using a {database_config['type']} database.")
     db: Database = PostgresDB() if database_config['type'] == "postgres" \
-        else CassandraDB
+        else CassandraDB()
     should_setup = database_config['setup']
 
     db.connect(database_config, should_setup)

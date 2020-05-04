@@ -15,13 +15,13 @@ class CassandraDB(Database):
         self.connection = cluster.connect()
         # TODO: Add specific connection code, if needed.
         if setup:
-            self.__setup_database(config)
-        self.connection.set_keyspace(config['keyspace'])
+            self.__setup_database(connection_config)
+        self.connection.set_keyspace(connection_config['keyspace'])
 
     def __setup_database(self, config):
         # Create the keyspace
         self.connection.execute(f'''
-        CREATE KEYSPACE {config['keyspace']} with replication = {{'
+        CREATE KEYSPACE {config['keyspace']} with replication = {{
             'class':'SimpleStrategy','replication_factor':1
         }};
         ''')
