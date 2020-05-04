@@ -30,6 +30,9 @@ class PostgresDB(Database):
         # This is an example for a query. The same query, with the same function
         # name, parameters and return type, should be implemented for the other
         # database.
-        return self.connection("""
+        curr = self.connection.cursor()
+        curr.execute("""
             SELECT version()
         """)
+        result = curr.fetchone()
+        return result
