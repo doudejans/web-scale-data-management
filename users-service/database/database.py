@@ -17,3 +17,23 @@ class Database(object):
     @abc.abstractmethod
     def retrieve_version(self):
         pass
+
+    @abc.abstractmethod
+    def create_user(self):
+        pass
+
+    @abc.abstractmethod
+    def remove_user(self, user_id):
+        pass
+
+    @abc.abstractmethod
+    def get_credit(self, user_id):
+        pass
+
+    @abc.abstractmethod
+    def credit_add(self, user_id, amount):
+        pass
+
+    @abc.abstractmethod
+    def credit_subtract(self, user_id, amount):
+        pass
