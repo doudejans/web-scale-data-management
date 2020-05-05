@@ -21,12 +21,12 @@ class PostgresDB(Database):
     def __setup_database(self, config):
         cursor = self.connection.cursor()
         cursor.execute('''
-        CREATE TABLE orders (order_id uuid CONSTRAINT orders_pk PRIMARY KEY, user_id uuid NOT NULL);
-        CREATE INDEX orders_user_id_index ON orders (user_id);
+        CREATE TABLE IF NOT EXISTS orders (order_id uuid CONSTRAINT orders_pk PRIMARY KEY, user_id uuid NOT NULL);
+        CREATE INDEX IF NOT EXISTS orders_user_id_index ON orders (user_id);
         ''')
 
         cursor.execute('''
-        CREATE TABLE order_items (
+        CREATE TABLE IF NOT EXISTS order_items (
         order_id uuid, item_id uuid, amount int, CONSTRAINT order_items_pk PRIMARY KEY (order_id, item_id)
         );
         ''')
