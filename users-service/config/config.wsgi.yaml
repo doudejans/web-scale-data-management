@@ -1,4 +1,4 @@
-name: "<microservice name>"
+name: "users-service"
 database:
   type: "cassandra"
   setup: true
