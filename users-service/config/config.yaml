@@ -1,0 +1,12 @@
+name: "<microservice name>"
+database:
+  type: "postgres"
+  setup: true
+  connection:
+    host: "127.0.0.1"
+    database: "microservice"
+    user: "microservice"
+    password: "secret"
+dev:
+  host: "127.0.0.1"
+  port: 5000
