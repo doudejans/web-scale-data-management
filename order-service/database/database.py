@@ -13,7 +13,6 @@ class Database(object):
     def connect(self, config, setup):
         pass
 
-    # TODO: Define the required functions for your db here...
     @abc.abstractmethod
-    def retrieve_version(self):
+    def add_order(self, order_id, user_id):
         pass

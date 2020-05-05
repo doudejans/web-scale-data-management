@@ -18,6 +18,11 @@ class CassandraDB(Database):
             self.__setup_database(connection_config)
         self.connection.set_keyspace(connection_config['keyspace'])
 
+    def add_order(self, order_id, user_id):
+        self.connection.execute('''
+        INSERT INTO orders (order_id, user_id) VALUES (%s, %s)
+        ''', (order_id, user_id))
+
     def __setup_database(self, config):
         # Create the keyspace
         self.connection.execute(f'''
@@ -33,11 +38,3 @@ class CassandraDB(Database):
         self.connection.execute('''
         CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount int, PRIMARY KEY (order_id, item_id))
         ''')
-
-    def retrieve_version(self):
-        # This is an example for a query. The same query, with the same function
-        # name, parameters and return type, should be implemented for the other
-        # database.
-        return self.connection.execute("""
-          SELECT release_version FROM system.local
-        """).one()

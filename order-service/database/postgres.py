@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.extras
 from database.database import Database
 
 
@@ -18,28 +19,24 @@ class PostgresDB(Database):
         if setup:
             self.__setup_database(config)
 
+    def add_order(self, order_id, user_id):
+        psycopg2.extras.register_uuid()
+        with self.connection.cursor() as cursor:
+            cursor.execute('''
+            INSERT INTO orders (order_id, user_id) VALUES (%s, %s)
+            ''', (order_id, user_id))
+            self.connection.commit()
+
     def __setup_database(self, config):
-        cursor = self.connection.cursor()
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS orders (order_id uuid CONSTRAINT orders_pk PRIMARY KEY, user_id uuid NOT NULL);
-        CREATE INDEX IF NOT EXISTS orders_user_id_index ON orders (user_id);
-        ''')
+        with self.connection.cursor() as cursor:
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS orders (order_id uuid CONSTRAINT orders_pk PRIMARY KEY, user_id uuid NOT NULL);
+            CREATE INDEX IF NOT EXISTS orders_user_id_index ON orders (user_id);
+            ''')
 
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS order_items (
-        order_id uuid, item_id uuid, amount int, CONSTRAINT order_items_pk PRIMARY KEY (order_id, item_id)
-        );
-        ''')
-        self.connection.commit()
-        cursor.close()
-
-    def retrieve_version(self):
-        # This is an example for a query. The same query, with the same function
-        # name, parameters and return type, should be implemented for the other
-        # database.
-        curr = self.connection.cursor()
-        curr.execute("""
-            SELECT version()
-        """)
-        result = curr.fetchone()
-        return result
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS order_items (
+            order_id uuid, item_id uuid, amount int, CONSTRAINT order_items_pk PRIMARY KEY (order_id, item_id)
+            );
+            ''')
+            self.connection.commit()
