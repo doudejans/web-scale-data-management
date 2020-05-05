@@ -1,5 +1,6 @@
 import uuid
 
+from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster, Session
 
 from database.database import Database
@@ -13,8 +14,11 @@ class CassandraDB(Database):
     connection: Session = None
 
     def connect(self, config, setup=False):
-        cluster = Cluster()
         connection_config = config['connection']
+        auth_provider = PlainTextAuthProvider(username=connection_config['user'],
+                                              password=connection_config['password'])\
+            if 'user' in connection_config else None
+        cluster = Cluster(auth_provider=auth_provider)
         self.connection = cluster.connect()
         # TODO: Add specific connection code, if needed.
         if setup:
