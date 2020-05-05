@@ -27,6 +27,14 @@ class PostgresDB(Database):
             ''', (order_id, user_id))
             self.connection.commit()
 
+    def remove_order(self, order_id):
+        psycopg2.extras.register_uuid()
+        with self.connection.cursor() as cursor:
+            cursor.execute('''
+                    DELETE FROM orders WHERE order_id = %s
+                    ''', (order_id, ))
+            self.connection.commit()
+
     def __setup_database(self, config):
         with self.connection.cursor() as cursor:
             cursor.execute('''

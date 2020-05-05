@@ -23,6 +23,11 @@ class CassandraDB(Database):
         INSERT INTO orders (order_id, user_id) VALUES (%s, %s)
         ''', (order_id, user_id))
 
+    def remove_order(self, order_id):
+        self.connection.execute('''
+        DELETE FROM orders WHERE order_id = %s
+        ''', (order_id, ))
+
     def __setup_database(self, config):
         # Create the keyspace
         self.connection.execute(f'''
