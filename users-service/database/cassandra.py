@@ -49,17 +49,6 @@ class CassandraDB(Database):
         """).one()
 
     def create_user(self):
-        # commented out - no check needed as we can consider UUIDs as unique
-        # for attempt in range(10):
-        #     user_id = str(uuid.uuid4())
-        #     res = self.connection.execute(f'''
-        #     INSERT INTO users (user_id, credit)
-        #     VALUES ({user_id}, 0)
-        #     IF NOT EXISTS;
-        #     ''').one()
-        #     if res.applied:
-        #         return user_id
-        # return None
         user_id = str(uuid.uuid4())
         self.connection.execute(f'''
         INSERT INTO users (user_id, credit)
