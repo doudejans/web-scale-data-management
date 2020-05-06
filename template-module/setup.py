@@ -4,21 +4,19 @@ from database.database import Database
 from database.postgres import PostgresDB
 from database.cassandra import CassandraDB
 
-APPLICATION_NAME = "microservice"
 
-
-def setup_app():
+def setup_app(application_name: str):
     """
     Application setup code based on configuration file.
 
     This logic is located here as it is shared between the development and
     wsgi mode.
     """
-    config = retrieve_config(APPLICATION_NAME)
+    config = retrieve_config(application_name)
 
     database_config = config['database']
 
-    print(f"Starting {APPLICATION_NAME}")
+    print(f"Starting {application_name}")
     print(f" - Using a {database_config['type']} database.")
     db: Database = PostgresDB() if database_config['type'] == "postgres" \
         else CassandraDB()
