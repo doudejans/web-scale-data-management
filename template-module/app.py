@@ -4,6 +4,8 @@ from setup import setup_app
 # It uses the default flask development server and should not be used in
 # production. The config file used is "config.py".
 
-config, app = setup_app()
+APPLICATION_NAME = "microservice"
+
+config, app = setup_app(APPLICATION_NAME)
 if 'dev' in config:
     app.run(host=config['dev']['host'], port=config['dev']['port'])
