@@ -6,7 +6,7 @@ def retrieve_config(service_name: str):
 
     :param service_name Is used as service identifier and database name.
     """
-    return {
+    config = {
         "name": service_name,
         "database": {
             "type": os.getenv("DB_TYPE", "postgres"),
@@ -18,8 +18,10 @@ def retrieve_config(service_name: str):
                 "password": os.getenv("DB_PASS", "")
             }
         },
-        "dev": {
+    }
+    if os.getenv("ENVIRONMENT", "development") == "development":
+        config['dev'] = {
             "host": os.getenv("DEV_HOST", "127.0.0.1"),
             "port": os.getenv("DEV_PORT", 5000)
         }
-    }
+    return config
