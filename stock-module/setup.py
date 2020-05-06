@@ -5,7 +5,7 @@ from database.postgres import PostgresDB
 from database.cassandra import CassandraDB
 
 
-def setup_app(config_file: str = "config/config.yaml"):
+def setup_app(config_file: str = "config/config.cassandra.yaml"):
     """
     Application setup code based on configuration file.
 
@@ -24,6 +24,11 @@ def setup_app(config_file: str = "config/config.yaml"):
     should_setup = database_config['setup']
 
     db.connect(database_config, should_setup)
+    uuid = db.create_stock()
+    db.stock_add(uuid, 50)
+    db.stock_subtract(uuid, 20)
+    print(db.get_availability(uuid))
+
 
     app = routes.create_app(db)
     return config, app

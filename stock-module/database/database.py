@@ -13,7 +13,22 @@ class Database(object):
     def connect(self, config, setup):
         pass
 
-    # TODO: Define the required functions for your db here...
     @abc.abstractmethod
     def retrieve_version(self):
+        pass
+
+    @abc.abstractmethod
+    def get_availability(self, item_id):
+        pass
+
+    @abc.abstractmethod
+    def stock_subtract(self, item_id, number):
+        pass
+
+    @abc.abstractmethod
+    def stock_add(self, item_id, number):
+        pass
+
+    @abc.abstractmethod
+    def create_stock(self):
         pass
