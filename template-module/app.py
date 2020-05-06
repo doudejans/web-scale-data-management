@@ -5,5 +5,5 @@ from setup import setup_app
 # production. The config file used is "config.py".
 
 config, app = setup_app()
-if config['dev'] is not None:
+if 'dev' in config:
     app.run(host=config['dev']['host'], port=config['dev']['port'])
