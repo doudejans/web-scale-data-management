@@ -24,11 +24,6 @@ def setup_app(config_file: str = "config/config.cassandra.yaml"):
     should_setup = database_config['setup']
 
     db.connect(database_config, should_setup)
-    uuid = db.create_stock()
-    db.stock_add(uuid, 50)
-    db.stock_subtract(uuid, 20)
-    print(db.get_availability(uuid))
-
 
     app = routes.create_app(db)
     return config, app
