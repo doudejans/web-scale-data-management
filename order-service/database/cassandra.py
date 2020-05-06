@@ -13,7 +13,6 @@ class CassandraDB(Database):
         cluster = Cluster()
         connection_config = config['connection']
         self.connection = cluster.connect()
-        # TODO: Add specific connection code, if needed.
         if setup:
             self.__setup_database(connection_config)
         self.connection.set_keyspace(connection_config['keyspace'])
@@ -23,10 +22,17 @@ class CassandraDB(Database):
         INSERT INTO orders (order_id, user_id) VALUES (%s, %s)
         ''', (order_id, user_id))
 
-    def remove_order(self, order_id):
+    def delete_order(self, order_id):
         self.connection.execute('''
         DELETE FROM orders WHERE order_id = %s
         ''', (order_id, ))
+
+    def get_order(self, order_id):
+        results = self.connection.execute('''
+        SELECT user_id FROM orders WHERE order_id = %s
+        ''', (order_id,))
+        row = results.one()
+        return row.user_id if row else None
 
     def __setup_database(self, config):
         # Create the keyspace

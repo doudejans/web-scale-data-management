@@ -18,5 +18,9 @@ class Database(object):
         pass
 
     @abc.abstractmethod
-    def remove_order(self, order_id):
+    def delete_order(self, order_id):
+        pass
+
+    @abc.abstractmethod
+    def get_order(self, order_id):
         pass

@@ -27,13 +27,23 @@ class PostgresDB(Database):
             ''', (order_id, user_id))
             self.connection.commit()
 
-    def remove_order(self, order_id):
+    def delete_order(self, order_id):
         psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
-                    DELETE FROM orders WHERE order_id = %s
-                    ''', (order_id, ))
+            DELETE FROM orders WHERE order_id = %s
+            ''', (order_id, ))
             self.connection.commit()
+
+    def get_order(self, order_id):
+        psycopg2.extras.register_uuid()
+        with self.connection.cursor() as cursor:
+            cursor.execute('''
+            SELECT user_id FROM orders WHERE order_id = %s
+            ''', (order_id,))
+            row = cursor.fetchone()
+
+        return row[0] if row else None
 
     def __setup_database(self, config):
         with self.connection.cursor() as cursor:
