@@ -1,0 +1,9 @@
+name: "<microservice name>"
+database:
+  type: "cassandra"
+  setup: true
+  connection:
+    host: "127.0.0.1"
+    keyspace: "microservice"
+    user: "microservice"
+    password: "secret"
