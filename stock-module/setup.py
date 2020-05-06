@@ -5,7 +5,7 @@ from database.postgres import PostgresDB
 from database.cassandra import CassandraDB
 
 
-def setup_app(config_file: str = "config/config.cassandra.yaml"):
+def setup_app(config_file: str = "config/config.yaml"):
     """
     Application setup code based on configuration file.
 
