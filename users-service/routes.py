@@ -18,16 +18,6 @@ def create_app(db: Database):
     def health():
         return jsonify({"status": "ok", "database": db.DATABASE})
 
-    # Define the route from the point where it is unique,
-    # so '/users/create' ->
-    # '/create'. The '/users' part will be handled by the proxy.
-    @service.route('/create')
-    def create_x():
-        # I have implemented this example route using the example query
-        # present in both the cassandra and postgres database.
-        return jsonify({"version": db.retrieve_version()})
-
-    # TODO: Add the microservice routes here...
     # returns an ID
     @service.route("/create", methods=["POST"])
     def create_user():
@@ -87,4 +77,3 @@ def create_app(db: Database):
 
 
     return service
-
