@@ -13,7 +13,9 @@ class Database(object):
     def connect(self, config, setup):
         pass
 
-    # TODO: Define the required functions for your db here...
     @abc.abstractmethod
-    def retrieve_version(self):
+    def set_payment_status(self, order_id):
+        pass
+
+    def get_payment_status(self, order_id):
         pass
