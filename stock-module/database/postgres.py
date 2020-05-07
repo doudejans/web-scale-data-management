@@ -79,5 +79,4 @@ class PostgresDB(Database):
             INSERT INTO stock (item_id, amount)
             VALUES (%s, 0);
         ''', (item_id,))
-        self.connection.commit()
         return item_id
