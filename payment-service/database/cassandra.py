@@ -31,10 +31,3 @@ class CassandraDB(Database):
         ''')
         # TODO: Add logic to setup the db and tables.
 
-    def retrieve_version(self):
-        # This is an example for a query. The same query, with the same function
-        # name, parameters and return type, should be implemented for the other
-        # database.
-        return self.connection.execute("""
-          SELECT release_version FROM system.local
-        """).one()
