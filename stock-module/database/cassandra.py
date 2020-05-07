@@ -68,7 +68,6 @@ class CassandraDB(Database):
             return False
         # set new stock amount
         subtraction = amount - number
-        print(subtraction)
         res = self.connection.execute(f'''
                UPDATE stock
                SET amount = %s
