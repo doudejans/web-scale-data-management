@@ -20,11 +20,14 @@ class PostgresDB(Database):
             self.__setup_database(config)
 
     def __setup_database(self, config):
-        # connection.execute(f"""
-        #   CREATE TABLE name ....
-        # """")
-        # TODO: Add logic to setup the db and tables.
-        pass
+        cur = self.connection.cursor()
+        cur.execute(f"""
+        CREATE TYPE payment_status AS ENUM ('PAID', 'CANCELLED');
+        CREATE TABLE IF NOT EXISTS order_payment_status (
+            order_id uuid,
+            status payment_status
+        );
+        """)
 
     def retrieve_version(self):
         # This is an example for a query. The same query, with the same function
