@@ -1,4 +1,5 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response
+from http import HTTPStatus
 from database.database import Database
 
 # This is the main file of the service, handling with the different routes
@@ -16,18 +17,26 @@ def create_app(db: Database):
     def health():
         return jsonify({"status": "ok", "database": db.DATABASE})
 
-    # TODO: Add the microservice routes here...
-    @service.route('/pay/:user_id/:order_id', methods=["POST"])
-    def complete_payment():
-        pass
+    @service.route('/pay/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
+    def complete_payment(user_id, order_id):
+        db.set_payment_status(order_id, "PAID")
+        return make_response(jsonify(), HTTPStatus.CREATED)
 
-    @service.route('/cancel/:user_id/:order_id', methods=["POST"])
-    def cancel_payment():
-        pass
+    @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
+    def cancel_payment(user_id, order_id):
+        db.set_payment_status(order_id, "CANCELLED")
+        return make_response(jsonify(), HTTPStatus.CREATED)
 
-    @service.route('/status/:order_id', methods=["GET"])
-    def get_order_status():
-        pass
+    @service.route('/status/<uuid:order_id>', methods=["GET"])
+    def get_order_status(order_id):
+        order_status = db.get_payment_status(order_id)
+        if order_status is not None:
+            return make_response(jsonify({
+                "order_id": order_id,
+                "status": order_status
+            }), HTTPStatus.OK)
+        else:
+            return make_response(jsonify(), HTTPStatus.NOT_FOUND)
 
     return service
 
