@@ -29,5 +29,24 @@ class CassandraDB(Database):
             'class':'SimpleStrategy','replication_factor':1
         }};
         ''')
-        # TODO: Add logic to setup the db and tables.
+        self.connection.set_keyspace(config['database'])
+        self.connection.execute(f'''
+        CREATE TABLE IF NOT EXISTS order_payment_status (order_id uuid PRIMARY KEY, status varchar);
+        ''')
 
+    def set_payment_status(self, order_id, status):
+        self.connection.execute('''
+        INSERT INTO order_payment_status (order_id, status)
+        VALUES (%s, %s)
+        ''', (order_id, status))
+
+    def get_payment_status(self, order_id):
+        results = self.connection.execute('''
+        SELECT status FROM order_payment_status
+        WHERE order_id = %s
+        ''', (order_id,))
+        row = results.one()
+        if row is None:
+            return None
+        else:
+            return row.status
