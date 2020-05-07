@@ -46,6 +46,24 @@ class CassandraDB(Database):
         UPDATE order_items SET amount = amount + 1 WHERE order_id = %s AND item_id = %s
         ''', (order_id, item_id))
 
+        return True
+
+    def remove_item_from_order(self, order_id, item_id):
+        results = self.connection.execute('''
+        SELECT * FROM orders WHERE order_id = %s
+        ''', (order_id,))
+
+        if results.one() is None:
+            return False
+
+        self.connection.execute('''
+        UPDATE order_items SET amount = amount - 1 WHERE order_id = %s AND item_id = %s
+        ''', (order_id, item_id))
+
+        # TODO: what if counter is negative or zero after this?
+
+        return True
+
     def __setup_database(self, config):
         # Create the keyspace
         self.connection.execute(f'''

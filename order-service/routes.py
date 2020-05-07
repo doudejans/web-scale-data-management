@@ -34,9 +34,21 @@ def create_app(db: Database):
 
     @service.route('/addItem/<uuid:order_id>/<uuid:item_id>', methods=['POST'])
     def add_item_to_order(order_id: UUID, item_id: UUID):
-        db.add_item_to_order(order_id, item_id)
+        found_order = db.add_item_to_order(order_id, item_id)
 
-        return jsonify({'status': 200, 'message': 'success'})
+        if found_order:
+            return jsonify({'status': 200, 'message': 'success'})
+        else:
+            return jsonify({'status': 404, 'message': 'Order not found'}), 404
+
+    @service.route('/removeItem/<uuid:order_id>/<uuid:item_id>', methods=['DELETE'])
+    def remove_item_from_order(order_id: UUID, item_id: UUID):
+        found_order = db.remove_item_from_order(order_id, item_id)
+
+        if found_order:
+            return jsonify({'status': 200, 'message': 'success'})
+        else:
+            return jsonify({'status': 404, 'message': 'Order not found'}), 404
 
     return service
 

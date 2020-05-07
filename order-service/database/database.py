@@ -28,3 +28,7 @@ class Database(object):
     @abc.abstractmethod
     def add_item_to_order(self, order_id, item_id):
         pass
+
+    @abc.abstractmethod
+    def remove_item_from_order(self, order_id, item_id):
+        pass

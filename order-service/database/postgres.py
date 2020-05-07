@@ -49,10 +49,39 @@ class PostgresDB(Database):
         psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
+            SELECT * FROM orders WHERE order_id = %s;
+            ''', (order_id, ))
+
+            if cursor.fetchone() is None:
+                return False
+
+            cursor.execute('''
             INSERT INTO order_items (order_id, item_id, amount) VALUES (%s, %s, 1)
             ON CONFLICT (order_id, item_id) DO UPDATE SET amount = order_items.amount + 1;
             ''', (order_id, item_id))
             self.connection.commit()
+
+            return True
+
+    def remove_item_from_order(self, order_id, item_id):
+        psycopg2.extras.register_uuid()
+        with self.connection.cursor() as cursor:
+            cursor.execute('''
+            SELECT * FROM orders WHERE order_id = %s;
+            ''', (order_id, ))
+
+            if cursor.fetchone() is None:
+                return False
+
+            cursor.execute('''
+            UPDATE order_items SET amount = amount - 1 WHERE order_id = %s AND item_id = %s;
+            ''', (order_id, item_id))
+            cursor.execute('''
+            DELETE FROM order_items WHERE order_id = %s AND item_id = %s AND amount = 0;
+            ''', (order_id, item_id))
+
+            self.connection.commit()
+            return True
 
     def __setup_database(self, config):
         with self.connection.cursor() as cursor:
