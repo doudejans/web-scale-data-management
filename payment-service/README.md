@@ -23,3 +23,7 @@ Returns the status of the payment (paid or not).
 ---
 
 For now I've defined the payment status as a string in the database: `PAID` or `CANCELLED`.
+
+## Running
+Before running make sure to create a database for the application in case you are using Postgres. 
+You can provide the name of the database using the environment variable `DB_IDENTIFIER`.
