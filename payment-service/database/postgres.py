@@ -1,5 +1,8 @@
 import psycopg2
+import psycopg2.extras
 from database.database import Database
+
+psycopg2.extras.register_uuid()
 
 
 # This file connects to the postgres database, it should expose the same
@@ -16,6 +19,7 @@ class PostgresDB(Database):
                                            database=connection_config["database"],
                                            password=connection_config["password"])
         # TODO: Add specific connection code, if needed.
+        self.connection.autocommit = True
         if setup:
             self.__setup_database(config)
 
