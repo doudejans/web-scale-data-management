@@ -26,4 +26,5 @@ def setup_app(config_file: str = "config/config.yaml"):
     db.connect(database_config, should_setup)
 
     app = routes.create_app(db)
+
     return config, app

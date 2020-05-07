@@ -101,4 +101,4 @@ class CassandraDB(Database):
                         INSERT INTO stock (item_id, amount)
                         VALUES (%s, 0);
                         ''', (item_id,))
-        return item_id
+        return str(item_id)

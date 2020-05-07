@@ -1,5 +1,8 @@
-from flask import Flask, jsonify
+from http import HTTPStatus
+
+from flask import Flask, jsonify, make_response
 from database.database import Database
+
 
 # This is the main file of the service, handling with the different routes
 # the microservice exposes.
@@ -9,23 +12,48 @@ from database.database import Database
 # based on the config given to the application.
 def create_app(db: Database):
     service = Flask(__name__)
+
     # The db variable will be set by app.py to either cassandra or postgres
-    # depending on flags used when starting the application. You can assume
+    # depending on flags used when starting the application.
 
     @service.route('/health')
     def health():
         return jsonify({"status": "ok", "database": db.DATABASE})
 
-    # Define the route from the point where it is unique,
-    # so '/users/create' ->
-    # '/create'. The '/users' part will be handled by the proxy.
-    @service.route('/create')
-    def create_x():
-        # I have implemented this example route using the example query
-        # present in both the cassandra and postgres database.
-        return jsonify({"version": db.retrieve_version()})
+    # Get stock item availability.
+    @service.route('/availability/<uuid:item_id>', methods=["GET"])
+    def get_availability(item_id):
+        availability = db.get_availability(item_id)
+        if availability is not None:
+            return make_response(str(availability), HTTPStatus.OK)
+        else:
+            return make_response('failure', HTTPStatus.NOT_FOUND)
 
-    # TODO: Add the microservice routes here...
+    # Subtract from existing stock.
+    @service.route('/subtract/<uuid:item_id>/<int:number>', methods=["POST"])
+    def stock_subtract(item_id, number):
+        success = db.stock_subtract(item_id, number)
+        if success:
+            return make_response('success', HTTPStatus.OK)
+        else:
+            return make_response('success', HTTPStatus.BAD_REQUEST)
+
+    # Add to existing stock.
+    @service.route('/add/<uuid:item_id>/<int:number>', methods=["POST"])
+    def stock_add(item_id, number):
+        success = db.stock_add(item_id, number)
+        if success:
+            return make_response('success', HTTPStatus.OK)
+        else:
+            return make_response('success', HTTPStatus.BAD_REQUEST)
+
+    # Create stock and return the ID.
+    @service.route('/item/create', methods=["POST"])
+    def create_stock():
+        uuid = db.create_stock()
+        if uuid is not None:
+            return make_response(str(uuid), HTTPStatus.CREATED)
+        else:
+            return make_response('failure', HTTPStatus.BAD_REQUEST)
 
     return service
-
