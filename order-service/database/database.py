@@ -24,3 +24,7 @@ class Database(object):
     @abc.abstractmethod
     def get_order(self, order_id):
         pass
+
+    @abc.abstractmethod
+    def add_item_to_order(self, order_id, item_id):
+        pass

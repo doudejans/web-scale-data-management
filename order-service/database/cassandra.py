@@ -34,6 +34,18 @@ class CassandraDB(Database):
         row = results.one()
         return row.user_id if row else None
 
+    def add_item_to_order(self, order_id, item_id):
+        results = self.connection.execute('''
+        SELECT * FROM orders WHERE order_id = %s
+        ''', (order_id,))
+
+        if results.one() is None:
+            return False
+
+        self.connection.execute('''
+        UPDATE order_items SET amount = amount + 1 WHERE order_id = %s AND item_id = %s
+        ''', (order_id, item_id))
+
     def __setup_database(self, config):
         # Create the keyspace
         self.connection.execute(f'''
@@ -47,5 +59,5 @@ class CassandraDB(Database):
         ''')
 
         self.connection.execute('''
-        CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount int, PRIMARY KEY (order_id, item_id))
+        CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount counter, PRIMARY KEY (order_id, item_id))
         ''')

@@ -45,6 +45,15 @@ class PostgresDB(Database):
 
         return row[0] if row else None
 
+    def add_item_to_order(self, order_id, item_id):
+        psycopg2.extras.register_uuid()
+        with self.connection.cursor() as cursor:
+            cursor.execute('''
+            INSERT INTO order_items (order_id, item_id, amount) VALUES (%s, %s, 1)
+            ON CONFLICT (order_id, item_id) DO UPDATE SET amount = order_items.amount + 1;
+            ''', (order_id, item_id))
+            self.connection.commit()
+
     def __setup_database(self, config):
         with self.connection.cursor() as cursor:
             cursor.execute('''
