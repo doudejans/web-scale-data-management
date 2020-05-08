@@ -23,7 +23,7 @@ def create_app(db: Database):
     def create_user():
         my_uuid = db.create_user()
         if uuid is not None:
-            return make_response(my_uuid, HTTPStatus.CREATED)
+            return make_response(jsonify({"id": my_uuid}), HTTPStatus.CREATED)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
@@ -53,7 +53,7 @@ def create_app(db: Database):
         # TODO
         credit = db.get_credit(user_id)
         if credit is not None:
-            return make_response(str(credit), HTTPStatus.OK)
+            return make_response(jsonify({"credit": str(credit)}), HTTPStatus.OK)
         else:
             return make_response('failure', HTTPStatus.NOT_FOUND)
 
