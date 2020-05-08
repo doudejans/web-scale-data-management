@@ -1,54 +1,97 @@
-# Template Module
+# Order service
 
-*This module was created to define a common layout to use during
-development as the different microservices (outlined in the main
-`README`) will be developed by different people at the same time.*
+## Endpoints
 
-- You can duplicate this folder and rename it to your microservice.
-- If you are using PyCharm, make sure to mark that directory as `sources root`
-(right click on the folder -> `Mark Directory As` -> `Sources Root`). This
-will prevent import errors you might have later on.
-- The app can be run in two ways:
-  - During development using `app.py`
+### Create order
+`POST /create/<uuid:user_id>`
 
-    ```python app.py```
+Creates a new order for the user with the given UUID `user_id`. 
+This returns the generated order_id in the following way:
+```json
+{
+  "status": 201,
+  "order_id": "49a8870a-4400-4fec-a47c-521ee365e761"
+}
+```
 
-  - **@doudejans** For production/deployment using `wsgi.py`
+### Remove order
+`DELETE /remove/<uuid:order_id>`
 
-    ```uwsgi --http :5000 --wsgi-file wsgi.py --callable app```
+Deletes the order with the given UUID `order_id`.
+Returns the following if successful:
+```json
+{
+  "status": 200,
+  "message": "success"
+}
+```
 
-  *Note: These different modes make use of a different configuration file
-  instead of program arguments (I tried that first) as in wsgi mode it does
-  not seem possible to provide arguments.*
+### Find order
+`GET /find/<uuid:order_id>`
 
-- You define the routes for your service in `routes.py` which has access to a
-`db` object. This database is is either a Cassandra or Postgres database which
- is abstracted away such that the application can easily switch between the
- two using a configuration file.
+Finds the order with the given UUID `order_id` and returns the associated `user_id`, the items in the order, and the payment status.
 
-   Look at the comments in this file and the example route on how to add your
-   own routes.
+For now, it returns only the `user_id` and the items, as no connection with the payment service is implemented yet.
 
-- If you need a function on the database, say to create a user, you can add an
- abstract implementation of it to `database/database.py`. This then forces you
- to add an actual implementation of this function in the supported databases:
- `database/postgres.py` and `database/cassandra.py`. By adhering to this
- abstraction the app can run on either database, which is required for the
- comparision.
+Example response:
+```json
+{
+  "status": 200,
+  "order": {
+    "order_id": "49a8870a-4400-4fec-a47c-521ee365e761",
+    "user_id": "55888c00-b375-4f08-a8dc-9e28b57b4b18",
+    "items": [
+      {
+        "item_id": "5e29052a-b86a-47ff-9a66-de3634a614ce",
+        "amount": 2
+      }
+    ] 
+  }
+}
+```
 
-   In this file you'll need to fill in the `__setup_database` function to set
-   up the correct tables and as specified before the functions to store
-   /retrieve the data you need from these tables.
+### Add item to order
+`POST /addItem/<uuid:order_id>/<uuid:item_id>`
 
-## Production
-*This is mostly a note to **@doudejans***
+Adds the item with the given UUID `item_id` to the order with the given UUID `order_id`. 
 
-In production we should not be using the default Flask web server, instead we
-use [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) which is written in
-C and should be rather fast.
-We set it up as defined in the
-[Flask documentation](https://flask.palletsprojects.com/en/1.1.x/deploying/uwsgi/) 
-and [uWSGI documentation](https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html).
+Currently does not check whether the item actually exists in the stock service.
 
-I've set up the template to allow for using uWSGI so it should be a trivial
-task to connect it to an nginx webserver.
+If the order is not found, it returns a `404 NOT FOUND` status.
+
+Response if successful:
+```json
+    {
+      "status": 200,
+      "message": "success"
+    }
+```
+
+### Removes item to order
+`DELETE /addItem/<uuid:order_id>/<uuid:item_id>`
+
+Remove the item with the given UUID `item_id` from the order with the given UUID `order_id`.
+
+Does not check if the order actually contained the item. 
+In the postgres implementation this has no effect, but in the cassandra implementation the "amount" counter can go negative because of this.
+
+Response if successful:
+```json
+    {
+      "status": 200,
+      "message": "success"
+    }
+```
+
+### Checkout order
+`POST /checkout/<uuid:order_id>>`
+
+Not implemented yet. Should contact the stock and payment services in a single transaction that completes the order.
+
+
+
+To do:
+- Connect to other services
+- Implement checkout endpoint
+- Evaluate cassandra consistency for order items
+- Check if items exists before adding to order by contacting stock service

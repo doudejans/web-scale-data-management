@@ -1,7 +1,8 @@
-from flask import Flask, jsonify
-from database.database import Database
 from uuid import uuid4, UUID
-from http import HTTPStatus
+
+from flask import Flask, jsonify
+
+from database.database import Database
 
 
 def create_app(db: Database):
@@ -15,7 +16,7 @@ def create_app(db: Database):
     def create_order(user_id: UUID):
         order_id = uuid4()
         db.add_order(order_id, user_id)
-        return jsonify({'status': 200, 'order_id': str(order_id)})
+        return jsonify({'status': 201, 'order_id': str(order_id)}), 201
 
     @service.route('/remove/<uuid:order_id>', methods=['DELETE'])
     def remove_order(order_id: UUID):
