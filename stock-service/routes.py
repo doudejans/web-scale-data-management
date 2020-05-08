@@ -25,7 +25,7 @@ def create_app(db: Database):
     def get_availability(item_id):
         availability = db.get_availability(item_id)
         if availability is not None:
-            return make_response(str(availability), HTTPStatus.OK)
+            return make_response(jsonify({"availability":availability}), HTTPStatus.OK)
         else:
             return make_response('failure', HTTPStatus.NOT_FOUND)
 
