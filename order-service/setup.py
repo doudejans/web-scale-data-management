@@ -1,20 +1,18 @@
 import routes
-from config import read_config
+from config import retrieve_config
 from database.database import Database
 from database.postgres import PostgresDB
 from database.cassandra import CassandraDB
 
 
-def setup_app(config_file: str = "config/config.cassandra.yaml"):
+def setup_app(application_name: str):
     """
     Application setup code based on configuration file.
 
     This logic is located here as it is shared between the development and
     wsgi mode.
     """
-    config = read_config(config_file)
-
-    application_name = config['name']
+    config = retrieve_config(application_name)
     database_config = config['database']
 
     print(f"Starting {application_name}")

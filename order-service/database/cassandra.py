@@ -15,7 +15,7 @@ class CassandraDB(Database):
         self.connection = cluster.connect()
         if setup:
             self.__setup_database(connection_config)
-        self.connection.set_keyspace(connection_config['keyspace'])
+        self.connection.set_keyspace(connection_config['database'])
 
     def add_order(self, order_id, user_id):
         self.connection.execute('''
