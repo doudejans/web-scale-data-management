@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service-loadbalancer
+spec:
+  selector:
+    app: payment-service
+  ports:
+  - protocol: "TCP"
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  selector:
+    matchLabels:
+      app: payment-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: payment-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "postgresql.default.svc.cluster.local"
+        - name: DB_PASS
+          value: "paymentservicedev"
+
