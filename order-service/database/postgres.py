@@ -12,15 +12,16 @@ class PostgresDB(Database):
 
     def connect(self, config, setup):
         connection_config = config['connection']
+
         self.connection = psycopg2.connect(host=connection_config["host"],
                                            user=connection_config["user"],
                                            database=connection_config["database"],
                                            password=connection_config["password"])
+        psycopg2.extras.register_uuid()
         if setup:
             self.__setup_database(config)
 
     def add_order(self, order_id, user_id):
-        psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
             INSERT INTO orders (order_id, user_id) VALUES (%s, %s)
@@ -28,7 +29,6 @@ class PostgresDB(Database):
             self.connection.commit()
 
     def delete_order(self, order_id):
-        psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
             DELETE FROM orders WHERE order_id = %s
@@ -36,7 +36,6 @@ class PostgresDB(Database):
             self.connection.commit()
 
     def get_order(self, order_id):
-        psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
             SELECT user_id FROM orders WHERE order_id = %s
@@ -59,7 +58,6 @@ class PostgresDB(Database):
                 return None
 
     def add_item_to_order(self, order_id, item_id):
-        psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
             SELECT * FROM orders WHERE order_id = %s;
@@ -77,7 +75,6 @@ class PostgresDB(Database):
             return True
 
     def remove_item_from_order(self, order_id, item_id):
-        psycopg2.extras.register_uuid()
         with self.connection.cursor() as cursor:
             cursor.execute('''
             SELECT * FROM orders WHERE order_id = %s;
