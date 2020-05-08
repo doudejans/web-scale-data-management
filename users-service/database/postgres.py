@@ -19,6 +19,7 @@ class PostgresDB(Database):
                                            user=connection_config["user"],
                                            database=connection_config["database"],
                                            password=connection_config["password"])
+        self.connection.autocommit = True
         psycopg2.extras.register_uuid()
         if setup:
             self.__setup_database(config)
