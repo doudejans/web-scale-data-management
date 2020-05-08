@@ -30,11 +30,17 @@ class PostgresDB(Database):
     def __setup_database(self, config):
         cur = self.__get_cursor()
         cur.execute(f"""
-        CREATE TYPE payment_status AS ENUM ('PAID', 'CANCELLED');
-        CREATE TABLE IF NOT EXISTS order_payment_status (
-            order_id uuid,
-            status payment_status
-        );
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
+                CREATE TYPE payment_status AS ENUM ('PAID', 'CANCELLED');
+                CREATE TABLE IF NOT EXISTS order_payment_status (
+                    order_id uuid,
+                    status payment_status
+                );
+            END IF;
+        END$$;
+        
         """)
 
     def set_payment_status(self, order_id, status):
