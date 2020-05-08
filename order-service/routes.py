@@ -25,14 +25,13 @@ def create_app(db: Database):
 
     @service.route('/find/<uuid:order_id>')
     def find_order(order_id: UUID):
-        user_id = db.get_order(order_id)
-        if user_id is None:
+        order = db.get_order(order_id)
+        if order is None:
             return jsonify({'status': 404, 'message': 'Order not found'}), 404
 
-        # TODO: add items for order and payment status
         # TODO: contact payment service for status
 
-        return jsonify({'status': 200, 'order': {'order_id': order_id, 'user_id': user_id}})
+        return jsonify({'status': 200, 'order': order})
 
     @service.route('/addItem/<uuid:order_id>/<uuid:item_id>', methods=['POST'])
     def add_item_to_order(order_id: UUID, item_id: UUID):

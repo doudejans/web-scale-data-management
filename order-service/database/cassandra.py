@@ -30,14 +30,26 @@ class CassandraDB(Database):
     def get_order(self, order_id):
         results = self.connection.execute('''
         SELECT user_id FROM orders WHERE order_id = %s
-        ''', (order_id,))
-        row = results.one()
-        return row.user_id if row else None
+        ''', (order_id, ))
+        user_id = results.one()
+
+        if user_id:
+            items = self.connection.execute('''
+            SELECT item_id, amount FROM order_items WHERE order_id = %s
+            ''', (order_id, ))
+
+            return {
+                'order_id': order_id,
+                'user_id': user_id,
+                'items': [{'item_id': item[0], 'amount': item[1]} for item in items]
+            }
+        else:
+            return None
 
     def add_item_to_order(self, order_id, item_id):
         results = self.connection.execute('''
         SELECT * FROM orders WHERE order_id = %s
-        ''', (order_id,))
+        ''', (order_id, ))
 
         if results.one() is None:
             return False
@@ -51,7 +63,7 @@ class CassandraDB(Database):
     def remove_item_from_order(self, order_id, item_id):
         results = self.connection.execute('''
         SELECT * FROM orders WHERE order_id = %s
-        ''', (order_id,))
+        ''', (order_id, ))
 
         if results.one() is None:
             return False
