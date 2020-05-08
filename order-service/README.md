@@ -6,6 +6,9 @@
 `POST /create/<uuid:user_id>`
 
 Creates a new order for the user with the given UUID `user_id`. 
+
+Currently does not check if the user exists by contacting the user service.
+
 This returns the generated order_id in the following way:
 ```json
 {
