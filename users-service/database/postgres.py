@@ -26,7 +26,7 @@ class PostgresDB(Database):
     def __setup_database(self, config):
         with self.connection.cursor() as cur:
             cur.execute(f'''
-            CREATE TABLE users (
+            CREATE TABLE IF NOT EXISTS users (
                 user_id uuid,
                 credit integer
             );
