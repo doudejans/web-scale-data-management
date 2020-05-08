@@ -14,10 +14,6 @@ class Database(object):
         pass
 
     @abc.abstractmethod
-    def retrieve_version(self):
-        pass
-
-    @abc.abstractmethod
     def get_availability(self, item_id):
         pass
 

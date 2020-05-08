@@ -15,7 +15,7 @@ def retrieve_config(service_name: str):
                 "host": os.getenv("DB_HOST", "127.0.0.1"),
                 "database": os.getenv("DB_IDENTIFIER", service_name),
                 "user": os.getenv("DB_USER", "postgres"),
-                "password": os.getenv("DB_PASS", "secret")
+                "password": os.getenv("DB_PASS", "")
             }
         },
     }
