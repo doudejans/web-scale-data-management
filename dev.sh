@@ -2,6 +2,7 @@
 
 command -v minikube >/dev/null 2>&1 || { echo >&2 "minikube not found, aborting..."; exit 1; }
 command -v kubectl >/dev/null 2>&1 || { echo >&2 "kubectl not found, aborting..."; exit 1; }
+command -v helm >/dev/null 2>&1 || { echo >&2 "helm not found, aborting..."; exit 1; }
 
 minikube start
 
