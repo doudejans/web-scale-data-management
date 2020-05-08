@@ -19,7 +19,6 @@ class CassandraDB(Database):
             if 'user' in connection_config else None
         cluster = Cluster(auth_provider=auth_provider)
         self.connection = cluster.connect()
-        # TODO: Add specific connection code, if needed.
         if setup:
             self.__setup_database(connection_config)
         self.connection.set_keyspace(connection_config['database'])
