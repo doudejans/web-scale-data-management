@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: payment-service-psql-loadbalancer
+  name: stock-service-cass-loadbalancer
 spec:
   selector:
-    app: payment-service-psql
+    app: stock-service-cass
   ports:
   - protocol: "TCP"
     port: 80
@@ -15,20 +15,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: payment-service-psql
+  name: stock-service-cass
 spec:
   selector:
     matchLabels:
-      app: payment-service-psql
+      app: stock-service-cass
   replicas: 1
   template:
     metadata:
       labels:
-        app: payment-service-psql
+        app: stock-service-cass
     spec:
       containers:
-      - name: payment-service
-        image: payment-service:latest
+      - name: stock-service
+        image: stock-service:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 80
@@ -36,7 +36,7 @@ spec:
         - name: DB_SETUP
           value: "True"
         - name: DB_HOST
-          value: "postgresql.default.svc.cluster.local"
+          value: ""
         - name: DB_PASS
-          value: "servicedev"
+          value: "stockservicedev"
 

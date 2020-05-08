@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: payment-service-psql-loadbalancer
+  name: stock-service-psql-loadbalancer
 spec:
   selector:
-    app: payment-service-psql
+    app: stock-service-psql
   ports:
   - protocol: "TCP"
     port: 80
@@ -15,20 +15,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: payment-service-psql
+  name: stock-service-psql
 spec:
   selector:
     matchLabels:
-      app: payment-service-psql
+      app: stock-service-psql
   replicas: 1
   template:
     metadata:
       labels:
-        app: payment-service-psql
+        app: stock-service-psql
     spec:
       containers:
-      - name: payment-service
-        image: payment-service:latest
+      - name: stock-service
+        image: stock-service:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 80
