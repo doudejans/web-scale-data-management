@@ -13,5 +13,5 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install postgresql --set postgresqlPassword=paymentservicedev,postgresqlDatabase=payment-service bitnami/postgresql
 
 sleep 10
-kubectl apply -f payment-service/dev-deployment.yaml
+kubectl apply -f payment-service/k8s/dev-deployment-psql.yaml
 
