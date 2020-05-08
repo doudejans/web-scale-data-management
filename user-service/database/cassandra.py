@@ -32,7 +32,7 @@ class CassandraDB(Database):
             'class':'SimpleStrategy','replication_factor':1
         }};
         ''')
-        self.connection.set_keyspace(config['keyspace'])
+        self.connection.set_keyspace(config['database'])
         self.connection.execute(f'''
         CREATE TABLE IF NOT EXISTS users (
             user_id uuid PRIMARY KEY,
