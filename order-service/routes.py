@@ -29,6 +29,7 @@ def create_app(db: Database):
             return jsonify({'status': 404, 'message': 'Order not found'}), 404
 
         # TODO: add items for order and payment status
+        # TODO: contact payment service for status
 
         return jsonify({'status': 200, 'order': {'order_id': order_id, 'user_id': user_id}})
 
@@ -49,6 +50,12 @@ def create_app(db: Database):
             return jsonify({'status': 200, 'message': 'success'})
         else:
             return jsonify({'status': 404, 'message': 'Order not found'}), 404
+
+    @service.route('/checkout/<uuid:order_id>', methods=['POST'])
+    def checkout_order(order_id: UUID):
+        # TODO: Contact stock service
+        # TODO: Contact payment service
+        return jsonify({'status': 200, 'message': 'Not implemented yet'})
 
     return service
 
