@@ -19,16 +19,20 @@ helm install postgresql --set postgresqlPassword=servicedev bitnami/postgresql
 helm install cassandra --set dbUser.password=servicedev bitnami/cassandra
 helm install traefik traefik/traefik 
 
+# Give the databases some time to start
 sleep 20
 
+# Add databases for the different services
 kubectl run postgresql-client --rm --tty -i --restart='Never' --namespace default --image bitnami/postgresql \
   --env="PGPASSWORD=servicedev" --command -- psql --host postgresql -U postgres -d postgres -p 5432 \
   -c "create database payment_service" -c "create database stock_service" \
   -c "create database order_service" -c "create database user_service"
 
+# Deploy the PostgreSQL dev version of the services
 kubectl apply -f payment-service/k8s/dev-deployment-psql.yaml
 kubectl apply -f stock-service/k8s/dev-deployment-psql.yaml
 
+# Deploy the Cassandra dev version of the services
 kubectl apply -f payment-service/k8s/dev-deployment-cass.yaml
 kubectl apply -f stock-service/k8s/dev-deployment-cass.yaml
 
