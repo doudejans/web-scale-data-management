@@ -9,11 +9,13 @@ minikube start
 # Make use of the minikube Docker environment
 eval $(minikube docker-env)
 docker build -t payment-service -f Dockerfile ./payment-service
-docker build -t stock-service -f Dockerfile ./stock-service
+docker build --cache-from payment-service -t stock-service -f Dockerfile ./stock-service
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add traefik https://containous.github.io/traefik-helm-chart
 
 helm install postgresql --set postgresqlPassword=servicedev bitnami/postgresql
+helm install traefik traefik/traefik 
 
 sleep 20
 
