@@ -69,3 +69,5 @@ Another option would be to map port 8000 using `kubectl`, which you can then use
 `kubectl port-forward $(kubectl get pods --selector "app.kubernetes.io/name=traefik" --output=name) 8000:8000`
 
 The above command can also be used to expose the Traefik dashboard, which can be accessed through port 9000.
+
+`minikube stop` stops the cluster but saves the state, and `minikube delete` deletes the entire cluster.
