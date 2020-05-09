@@ -4,7 +4,7 @@ from setup import setup_app
 # It uses the default flask development server and should not be used in
 # production. The config file used is "config.py".
 
-APPLICATION_NAME = "stock-service"
+APPLICATION_NAME = "stock_service"
 
 config, app = setup_app(APPLICATION_NAME)
 if 'dev' in config:

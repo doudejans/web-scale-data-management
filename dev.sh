@@ -13,17 +13,22 @@ docker build --cache-from payment-service -t stock-service -f Dockerfile ./stock
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add traefik https://containous.github.io/traefik-helm-chart
+helm repo update
 
 helm install postgresql --set postgresqlPassword=servicedev bitnami/postgresql
+helm install cassandra --set dbUser.password=servicedev bitnami/cassandra
 helm install traefik traefik/traefik 
 
 sleep 20
 
 kubectl run postgresql-client --rm --tty -i --restart='Never' --namespace default --image bitnami/postgresql \
   --env="PGPASSWORD=servicedev" --command -- psql --host postgresql -U postgres -d postgres -p 5432 \
-  -c "create database \"payment-service\"" -c "create database \"stock-service\"" \
-  -c "create database \"order-service\"" -c "create database \"user-service\""
+  -c "create database payment_service" -c "create database stock_service" \
+  -c "create database order_service" -c "create database user_service"
 
 kubectl apply -f payment-service/k8s/dev-deployment-psql.yaml
 kubectl apply -f stock-service/k8s/dev-deployment-psql.yaml
+
+kubectl apply -f payment-service/k8s/dev-deployment-cass.yaml
+kubectl apply -f stock-service/k8s/dev-deployment-cass.yaml
 

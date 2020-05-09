@@ -19,10 +19,14 @@ spec:
         ports:
         - containerPort: 80
         env:
+        - name: DB_TYPE
+          value: "postgres"
         - name: DB_SETUP
           value: "True"
         - name: DB_HOST
           value: "postgresql.default.svc.cluster.local"
+        - name: DB_USER
+          value: "postgres"
         - name: DB_PASS
           value: "servicedev"
 

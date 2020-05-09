@@ -17,7 +17,7 @@ class CassandraDB(Database):
         auth_provider = PlainTextAuthProvider(username=connection_config['user'],
                                               password=connection_config['password']) \
             if 'user' in connection_config else None
-        cluster = Cluster(auth_provider=auth_provider)
+        cluster = Cluster([connection_config['host']], auth_provider=auth_provider)
         self.connection = cluster.connect()
         if setup:
             self.__setup_database(connection_config)
