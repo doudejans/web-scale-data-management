@@ -51,7 +51,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /cassandra/payment
+      - /payment
 
 ---
 kind: IngressRoute
@@ -63,7 +63,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/cassandra/payment`)
+  - match: PathPrefix(`/payment`)
     kind: Rule
     services:
     - name: payment-service-cass-service

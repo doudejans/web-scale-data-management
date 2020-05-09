@@ -51,7 +51,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /cassandra/stock
+      - /stock
 
 ---
 kind: IngressRoute
@@ -63,7 +63,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/cassandra/stock`)
+  - match: PathPrefix(`/stock`)
     kind: Rule
     services:
     - name: stock-service-cass-service
