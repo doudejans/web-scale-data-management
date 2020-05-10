@@ -56,4 +56,5 @@ jobs:
           password: "${{ secrets.GITHUB_TOKEN }}"
           registry: docker.pkg.github.com
           image_name: $IMAGE_NAME
-
+          dockerfile: ../Dockerfile
+          context: stock-service
