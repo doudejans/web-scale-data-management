@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service-psql
+spec:
+  selector:
+    matchLabels:
+      app: order-service-psql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: order-service-psql
+    spec:
+      containers:
+      - name: order-service
+        image: order-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "postgres"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "postgresql.default.svc.cluster.local"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          value: "servicedev"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service-psql-service
+spec:
+  selector:
+    app: order-service-psql
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: order-service-psql-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /postgres/order
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: order-service-psql-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/postgres/order`)
+    kind: Rule
+    services:
+    - name: order-service-psql-service
+      port: 80
+    middlewares:
+      - name: order-service-psql-stripprefix

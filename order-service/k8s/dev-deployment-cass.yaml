@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service-cass
+spec:
+  selector:
+    matchLabels:
+      app: order-service-cass
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: order-service-cass
+    spec:
+      containers:
+      - name: order-service
+        image: order-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "cassandra"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "cassandra.default.svc.cluster.local"
+        - name: DB_USER
+          value: "cassandra"
+        - name: DB_PASS
+          value: "servicedev"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service-cass-service
+spec:
+  selector:
+    app: order-service-cass
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: order-service-cass-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /order
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: order-service-cass-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/order`)
+    kind: Rule
+    services:
+    - name: order-service-cass-service
+      port: 80
+    middlewares:
+      - name: order-service-cass-stripprefix
