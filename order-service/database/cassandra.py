@@ -1,3 +1,4 @@
+from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster, Session
 from database.database import Database
 
@@ -82,11 +83,11 @@ class CassandraDB(Database):
     def __setup_database(self, config):
         # Create the keyspace
         self.connection.execute(f'''
-        CREATE KEYSPACE IF NOT EXISTS {config['keyspace']} with replication = {{
+        CREATE KEYSPACE IF NOT EXISTS {config['database']} with replication = {{
             'class':'SimpleStrategy','replication_factor':1
         }};
         ''')
-        self.connection.set_keyspace(config['keyspace'])
+        self.connection.set_keyspace(config['database'])
         self.connection.execute('''
         CREATE TABLE IF NOT EXISTS orders (order_id uuid, user_id uuid, PRIMARY KEY (order_id, user_id))
         ''')
