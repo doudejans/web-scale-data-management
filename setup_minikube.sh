@@ -4,7 +4,7 @@ command -v minikube >/dev/null 2>&1 || { echo >&2 "minikube not found, aborting.
 command -v kubectl >/dev/null 2>&1 || { echo >&2 "kubectl not found, aborting..."; exit 1; }
 command -v helm >/dev/null 2>&1 || { echo >&2 "helm not found, aborting..."; exit 1; }
 
-minikube start
+minikube start --memory 4000 --disk-size 10000
 
 # Make use of the minikube Docker environment
 eval $(minikube docker-env)
