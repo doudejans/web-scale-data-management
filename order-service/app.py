@@ -8,5 +8,5 @@ APPLICATION_NAME = "order_service"
 
 config, app = setup_app(APPLICATION_NAME)
 
-if config['dev'] is not None:
+if 'dev' in config:
     app.run(host=config['dev']['host'], port=config['dev']['port'])

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-service-cass
+spec:
+  selector:
+    matchLabels:
+      app: stock-service-cass
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: stock-service-cass
+    spec:
+      containers:
+      - name: stock-service
+        image: stock-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "cassandra"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "cassandra"
+        - name: DB_USER
+          value: "cassandra"
+        - name: DB_PASS
+          value: "servicedev"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-service-cass-service
+spec:
+  selector:
+    app: stock-service-cass
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stock-service-cass-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /stock
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: stock-service-cass-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/stock`)
+    kind: Rule
+    services:
+    - name: stock-service-cass-service
+      port: 80
+    middlewares:
+      - name: stock-service-cass-stripprefix
