@@ -10,9 +10,6 @@ on:
     paths:
     - 'stock-service/**'
 
-env:
-  IMAGE_NAME: stock-service
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -55,6 +52,6 @@ jobs:
           username: "${{ github.actor }}"
           password: "${{ secrets.GITHUB_TOKEN }}"
           registry: docker.pkg.github.com
-          image_name: $IMAGE_NAME
+          image_name: stock-service
           dockerfile: ../Dockerfile
           context: stock-service
