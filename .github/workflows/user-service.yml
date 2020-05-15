@@ -5,10 +5,12 @@ on:
     branches: [ master ]
     paths:
     - 'user-service/**'
+    - '.github/workflows/user-service.yml'
   pull_request:
     branches: [ master ]
     paths:
     - 'user-service/**'
+    - '.github/workflows/user-service.yml'
 
 jobs:
   build:
