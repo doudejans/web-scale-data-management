@@ -1,8 +1,9 @@
 import requests
+import os
 from http import HTTPStatus
 
-USER_SERVICE_BASE = "https://user-service"
-ORDER_SERVICE_BASE = "https://order-service"
+USER_SERVICE_BASE = os.environ.get("USER_SERVICE", "http://localhost:5000/users")
+ORDER_SERVICE_BASE = os.environ.get("ORDER_SERVICE", "http://localhost:5000/orders")
 
 
 class CouldNotRetrieveOrderCost(Exception):
