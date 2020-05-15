@@ -15,11 +15,11 @@ class CouldNotSubtractCredit(Exception):
 
 def retrieve_order_cost(order_id) -> float:
     """Retrieves the total cost of an order from the orders service."""
-    resp = requests.get(f"{ORDER_SERVICE_BASE}/totalCost/{order_id}")
+    resp = requests.get(f"{ORDER_SERVICE_BASE}/find/{order_id}")
     # TODO: Check status code.
     if resp.status_code == HTTPStatus.OK:
         # TODO: Check totalCost retrieval.
-        return float(resp.json()['totalCost'])
+        return float(resp.json()['total_cost'])
     else:
         raise CouldNotRetrieveOrderCost()
 
