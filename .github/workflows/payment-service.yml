@@ -5,10 +5,12 @@ on:
     branches: [ master ]
     paths:
     - 'payment-service/**'
+    - '.github/workflows/payment-service.yml'
   pull_request:
     branches: [ master ]
     paths:
     - 'payment-service/**'
+    - '.github/workflows/payment-service.yml'
 
 jobs:
   build:

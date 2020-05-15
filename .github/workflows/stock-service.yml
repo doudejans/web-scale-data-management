@@ -5,10 +5,12 @@ on:
     branches: [ master ]
     paths:
     - 'stock-service/**'
+    - '.github/workflows/stock-service.yml'
   pull_request:
     branches: [ master ]
     paths:
     - 'stock-service/**'
+    - '.github/workflows/stock-service.yml'
 
 jobs:
   build:
