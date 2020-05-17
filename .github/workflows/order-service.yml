@@ -2,7 +2,7 @@ name: Order service
 
 on:
   push:
-    # branches: [ master ]
+    branches: [ master ]
     paths:
     - 'order-service/**'
     - '.github/workflows/order-service.yml'
@@ -48,7 +48,7 @@ jobs:
 
   build-push-image:
     runs-on: ubuntu-latest
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: build
     steps:
       - uses: actions/checkout@v2

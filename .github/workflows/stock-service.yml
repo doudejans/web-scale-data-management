@@ -2,7 +2,7 @@ name: Stock service
 
 on:
   push:
-    # branches: [ master ]
+    branches: [ master ]
     paths:
     - 'stock-service/**'
     - '.github/workflows/stock-service.yml'
@@ -48,7 +48,7 @@ jobs:
 
   build-push-image:
     runs-on: ubuntu-latest
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: build
     steps:
       - uses: actions/checkout@v2
