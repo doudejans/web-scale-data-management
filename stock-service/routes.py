@@ -52,7 +52,7 @@ def create_app(db: Database):
     def create_stock(price):
         uuid = db.create_stock(price)
         if uuid is not None:
-            return make_response(jsonify({"item_id": uuid}), HTTPStatus.CREATED)
+            return make_response(jsonify({"item_id": uuid}), HTTPStatus.OK)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
