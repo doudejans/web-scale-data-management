@@ -28,19 +28,20 @@ class PostgresDB(Database):
         cur.execute(f'''
                     CREATE TABLE IF NOT EXISTS stock (
                         item_id uuid,
-                        amount integer
+                        amount integer,
+                        price integer
                     );
                 ''')
         pass
 
-    def get_availability(self, item_id):
+    def find_stock(self, item_id):
         cur = self.connection.cursor()
         cur.execute(f'''
-               SELECT amount FROM stock
+               SELECT amount, price FROM stock
                WHERE item_id = %s;
                ''', (item_id,))
         res = cur.fetchone()
-        return None if res is None else res[0]
+        return None if res is None else res[0], res[1]
 
     def stock_subtract(self, item_id, number):
         cur = self.connection.cursor()
@@ -61,11 +62,11 @@ class PostgresDB(Database):
                 ''', (number, item_id))
         return cur.rowcount == 1
 
-    def create_stock(self):
+    def create_stock(self, price):
         item_id = uuid.uuid4()
         cur = self.connection.cursor()
         cur.execute(f'''
-            INSERT INTO stock (item_id, amount)
-            VALUES (%s, 0);
-        ''', (item_id,))
+            INSERT INTO stock (item_id, amount, price)
+            VALUES (%s, 0, %s);
+        ''', (item_id, price))
         return str(item_id)

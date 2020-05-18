@@ -36,7 +36,7 @@ def create_app(db: Database):
         if success:
             return make_response('success', HTTPStatus.OK)
         else:
-            return make_response('success', HTTPStatus.BAD_REQUEST)
+            return make_response('failure', HTTPStatus.BAD_REQUEST)
 
     # Add to existing stock.
     @service.route('/add/<uuid:item_id>/<int:number>', methods=["POST"])
@@ -45,7 +45,7 @@ def create_app(db: Database):
         if success:
             return make_response('success', HTTPStatus.OK)
         else:
-            return make_response('success', HTTPStatus.BAD_REQUEST)
+            return make_response('failure', HTTPStatus.BAD_REQUEST)
 
     # Create stock and return the ID.
     @service.route('/item/create/<int:price>', methods=["POST"])
