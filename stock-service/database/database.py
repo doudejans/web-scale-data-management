@@ -14,7 +14,7 @@ class Database(object):
         pass
 
     @abc.abstractmethod
-    def get_availability(self, item_id):
+    def find_stock(self, item_id):
         pass
 
     @abc.abstractmethod
@@ -26,5 +26,5 @@ class Database(object):
         pass
 
     @abc.abstractmethod
-    def create_stock(self):
+    def create_stock(self, price):
         pass

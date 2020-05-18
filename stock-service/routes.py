@@ -21,13 +21,13 @@ def create_app(db: Database):
         return jsonify({"status": "ok", "database": db.DATABASE})
 
     # Get stock item availability.
-    @service.route('/availability/<uuid:item_id>', methods=["GET"])
+    @service.route('/find/<uuid:item_id>', methods=["GET"])
     def get_availability(item_id):
-        availability = db.get_availability(item_id)
-        if availability is not None:
-            return make_response(jsonify({"availability":availability}), HTTPStatus.OK)
+        stock, price = db.find_stock(item_id)
+        if stock is not None:
+            return make_response(jsonify({"stock": stock, "price": price}), HTTPStatus.OK)
         else:
-            return make_response('failure', HTTPStatus.NOT_FOUND)
+            return make_response('failure', HTTPStatus.BAD_REQUEST)
 
     # Subtract from existing stock.
     @service.route('/subtract/<uuid:item_id>/<int:number>', methods=["POST"])
@@ -48,11 +48,11 @@ def create_app(db: Database):
             return make_response('success', HTTPStatus.BAD_REQUEST)
 
     # Create stock and return the ID.
-    @service.route('/item/create', methods=["POST"])
-    def create_stock():
-        uuid = db.create_stock()
+    @service.route('/item/create/<int:price>', methods=["POST"])
+    def create_stock(price):
+        uuid = db.create_stock(price)
         if uuid is not None:
-            return make_response(jsonify({"id": uuid}), HTTPStatus.CREATED)
+            return make_response(jsonify({"item_id": uuid}), HTTPStatus.CREATED)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
