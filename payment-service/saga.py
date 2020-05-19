@@ -1,5 +1,7 @@
-from flask import Blueprint
+from flask import Blueprint, make_response, request
+from http import HTTPStatus
 from enum import Enum
+import requests
 
 saga = Blueprint('saga', __name__)
 
@@ -10,11 +12,12 @@ class Events(Enum):
     PAYMENT_RESERVED = 2
 
 
-# For demonstration purposes the subscriptions list is stored locally. However
-# when replicas are used (in deployment) the list should be stored somewhere
+# For demonstration purposes the subscriptions set is stored locally. However
+# when replicas are used (in deployment) the set should be stored somewhere
 # externally such that each replica can access it.
-# The list can be optimised for few writes, many reads.
-# TODO: Move subscriptions list to external service.
+# The set can be optimised for few writes, many reads as we only need to add
+# the subscription once.
+# TODO: Move subscriptions set to external service.
 subscriptions = {}
 # Add all events to the subscription list as keys.
 for event in Events:
@@ -23,10 +26,17 @@ for event in Events:
 
 @saga.route('/subscribe/<event_name:string>')
 def subscribe_to(event_name):
+    data = request.get_json()
     event = __find_event_by_name(event_name)
     # TODO: Figure out how to send and receive callback url
-    subscriptions[event].add("callback_url")
-    pass
+    subscriptions[event].add(data["callback_url"])
+    return make_response('success', HTTPStatus.OK)
+
+
+def post_event(event: Events, transaction_id: str):
+    """Let all subscribers of a given event know about the given transaction"""
+    for subscriber in subscriptions[event]:
+        requests.post(f"{subscriber}/event/{event.name}/{transaction_id}")
 
 
 def __find_event_by_name(event_name):

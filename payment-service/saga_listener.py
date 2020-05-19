@@ -1,9 +1,8 @@
 from flask import Blueprint
-import request
+import requests
 
+CALLBACK_URL = ""
 saga_listener = Blueprint('saga_listener', __name__)
-
-# This subscriptions list is specific
 subscriptions = {}
 
 
@@ -17,7 +16,11 @@ def on_event(event, transaction_id):
 
 def subscribe_to(service: str, event: str, callback):
     """Subscribe to a service for a specific event."""
-    request.post(f'{service}/subscribe/{event}')
+    # In terms of replicas only one needs to call the subscribe function,
+    # however as we should not communicate between replicas we call again.
+
+    requests.post(f'{service}/subscribe/{event}',
+                  json={"callback_url": CALLBACK_URL})
     if event not in subscriptions:
         subscriptions[event] = []
     subscriptions[event].append(callback)
