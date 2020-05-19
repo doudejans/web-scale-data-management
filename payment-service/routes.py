@@ -49,7 +49,7 @@ def create_app(db: Database):
     @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def cancel_payment(user_id, order_id):
         db.set_payment_status(order_id, "CANCELLED")
-        return make_response(jsonify(), HTTPStatus.CREATED)
+        return make_response('success', HTTPStatus.CREATED)
 
     @service.route('/status/<uuid:order_id>', methods=["GET"])
     def get_order_status(order_id):
@@ -59,6 +59,6 @@ def create_app(db: Database):
                 "paid": order_status == "PAID"
             }), HTTPStatus.OK)
         else:
-            return make_response(jsonify(), HTTPStatus.NOT_FOUND)
+            return make_response('failure', HTTPStatus.NOT_FOUND)
 
     return service
