@@ -86,8 +86,10 @@ jobs:
         working-directory: ${{ env.SERVICE_DIR }}
         run: |-
           kubectl apply -f k8s/deployment-cass.yaml
+          kubectl rollout restart deployment/stock-service-cass
 
       - name: Deploy with PostgreSQL backend
         working-directory: ${{ env.SERVICE_DIR }}
         run: |-
           kubectl apply -f k8s/deployment-psql.yaml
+          kubectl rollout restart deployment/stock-service-psql
