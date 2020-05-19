@@ -13,7 +13,8 @@ on:
     - '.github/workflows/order-service.yml'
 
 env:
-  SERVICE_NAME: order-service
+  SERVICE_DIR: order-service
+  IMAGE_NAME: order-service
   GKE_CLUSTER: wsdm-cluster
   GKE_ZONE: europe-west4-b
 
@@ -32,14 +33,14 @@ jobs:
       run: sudo apt-get install python-dev libpq-dev
 
     - name: Install dependencies
-      working-directory: ${{ env.SERVICE_NAME }}
+      working-directory: ${{ env.SERVICE_DIR }}
       run: |
         python -m pip install --upgrade pip
         pip install flake8
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
-      working-directory: ${{ env.SERVICE_NAME }}
+      working-directory: ${{ env.SERVICE_DIR }}
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -59,9 +60,9 @@ jobs:
           username: _json_key
           password: "${{ secrets.GKE_SA_KEY }}"
           registry: gcr.io
-          image_name: ${{ env.SERVICE_NAME }}
+          image_name: ${{ env.IMAGE_NAME }}
           dockerfile: ../Dockerfile
-          context: ${{ env.SERVICE_NAME }}
+          context: ${{ env.SERVICE_DIR }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -82,11 +83,11 @@ jobs:
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
       - name: Deploy with Cassandra backend
-        working-directory: ${{ env.SERVICE_NAME }}
+        working-directory: ${{ env.SERVICE_DIR }}
         run: |-
           kubectl apply -f k8s/deployment-cass.yaml
 
       - name: Deploy with PostgreSQL backend
-        working-directory: ${{ env.SERVICE_NAME }}
+        working-directory: ${{ env.SERVICE_DIR }}
         run: |-
           kubectl apply -f k8s/deployment-psql.yaml
