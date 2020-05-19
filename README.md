@@ -71,3 +71,82 @@ Another option would be to map port 8000 using `kubectl`, which you can then use
 The above command can also be used to expose the Traefik dashboard, which can be accessed through port 9000.
 
 `minikube stop` stops the cluster but saves the state, and `minikube delete` deletes the entire cluster.
+
+## Deploying in production
+
+Assuming that you have a Kubernetes cluster up and running and [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [Helm](https://helm.sh) ready, you will need to take the following actions:
+
+1. Add the required Helm repos:
+
+    ```shell
+    helm repo add traefik https://containous.github.io/traefik-helm-chart
+    helm repo add bitnami https://charts.bitnami.com/bitnami
+    helm repo update
+    ```
+
+2. Add the Traefik Ingress Controller:
+
+    ```shell
+    helm install traefik traefik/traefik
+    ```
+
+3. Add a Cassandra instance:
+
+    ```shell
+    helm install cassandra bitnami/cassandra
+    ```
+
+4. Add a PostgreSQL instance:
+
+    ```shell
+    helm install postgresql bitnami/postgresql
+    ```
+
+5. Add the databases for the microservices:
+
+    ```shell
+    export POSTGRES_PASSWORD=$(kubectl get secret --namespace default postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
+
+    kubectl run postgresql-client --rm --tty -i --restart='Never' --namespace default --image bitnami/postgresql \
+    --env="PGPASSWORD=$POSTGRES_PASSWORD" --command -- psql --host postgresql -U postgres -d postgres -p 5432 \
+    -c "create database payment_service" -c "create database stock_service" \
+    -c "create database order_service" -c "create database user_service"
+    ```
+
+6. Deploy the microservices:
+
+    ```shell
+    kubectl apply -f order-service/k8s/deployment-cass.yaml
+    kubectl apply -f order-service/k8s/deployment-psql.yaml
+    ...
+    kubectl apply -f user-service/k8s/deployment-cass.yaml
+    kubectl apply -f user-service/k8s/deployment-psql.yaml
+    ```
+
+7. Check the status:
+
+    ```shell
+    kubectl get pods
+    kubectl get service
+    ```
+
+That should be all! Traefik should automatically detect the `IngressRoute` specifications in the deployment files.
+The microservices get the password for the databases through Kubernetes Secrets and connect to the databases through the services that are deployed by the Helm charts.
+
+### Scaling
+
+For scaling the Cassandra deployment to make use of replication, you can use:
+
+```shell
+helm upgrade --set cluster.replicaCount=2,cluster.seedCount=2 cassandra bitnami/cassandra
+```
+
+For replicating the microservices, you should edit and re-apply the deployment configuration files, e.g.:
+
+```yaml
+spec:
+  selector:
+    matchLabels:
+      app: user-service-cass
+  replicas: 2
+```
