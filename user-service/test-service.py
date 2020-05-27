@@ -1,24 +1,30 @@
-import requests
 import json
-from uuid import UUID
+import requests
 from http import HTTPStatus
+from uuid import UUID
 
 SERVICE_URL = "http://localhost:5000"
+
 
 def __create_user_request():
     return requests.post(f'{SERVICE_URL}/create')
 
+
 def __remove_user_request(user_id):
     return requests.delete(f'{SERVICE_URL}/remove/{user_id}')
+
 
 def __get_credit_request(user_id):
     return requests.get(f'{SERVICE_URL}/credit/{user_id}')
 
+
 def __credit_subtract_request(user_id, amount):
     return requests.post(f'{SERVICE_URL}/credit/subtract/{user_id}/{amount}')
 
+
 def __credit_add_request(user_id, amount):
     return requests.post(f'{SERVICE_URL}/credit/add/{user_id}/{amount}')
+
 
 def test_all():
     response = __create_user_request()

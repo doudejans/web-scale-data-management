@@ -1,7 +1,9 @@
-from flask import Flask, jsonify, make_response
-from database.database import Database
-from http import HTTPStatus
 import uuid
+from flask import Flask, jsonify, make_response
+from http import HTTPStatus
+
+from database.database import Database
+
 
 # This is the main file of the service, handling with the different routes
 # the microservice exposes.
@@ -11,6 +13,7 @@ import uuid
 # based on the config given to the application.
 def create_app(db: Database):
     service = Flask(__name__)
+
     # The db variable will be set by app.py to either cassandra or postgres
     # depending on flags used when starting the application. You can assume
 
@@ -74,6 +77,5 @@ def create_app(db: Database):
             return make_response('success', HTTPStatus.OK)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
-
 
     return service
