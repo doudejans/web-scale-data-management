@@ -27,7 +27,7 @@ def create_app(db: Database):
     def create_user():
         my_uuid = db.create_user()
         if uuid is not None:
-            return {"id": my_uuid}, HTTPStatus.CREATED
+            return {"user_id": my_uuid}, HTTPStatus.CREATED
         else:
             return 'failure', HTTPStatus.BAD_REQUEST
 
@@ -47,7 +47,7 @@ def create_app(db: Database):
         credit = 0
         success = True
         if success:
-            return {"id": user_id, "credit": credit}, HTTPStatus.OK
+            return {"user_id": user_id, "credit": credit}, HTTPStatus.OK
         else:
             return 'user_id not found', HTTPStatus.NOT_FOUND
 
