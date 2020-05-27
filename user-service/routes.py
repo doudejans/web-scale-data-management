@@ -1,6 +1,7 @@
 import uuid
-from flask import Flask, jsonify, make_response
 from http import HTTPStatus
+
+from flask import Flask
 
 from database.database import Database
 
@@ -19,25 +20,25 @@ def create_app(db: Database):
 
     @service.route('/health')
     def health():
-        return jsonify({"status": "ok", "database": db.DATABASE})
+        return {"status": "ok", "database": db.DATABASE}
 
     # returns an ID
     @service.route("/create", methods=["POST"])
     def create_user():
         my_uuid = db.create_user()
         if uuid is not None:
-            return make_response(jsonify({"id": my_uuid}), HTTPStatus.CREATED)
+            return {"id": my_uuid}, HTTPStatus.CREATED
         else:
-            return make_response('failure', HTTPStatus.BAD_REQUEST)
+            return 'failure', HTTPStatus.BAD_REQUEST
 
     # return success/failure
     @service.route("/remove/<uuid:user_id>", methods=["DELETE"])
     def remove_user(user_id):
         success = db.remove_user(user_id)
         if success:
-            return make_response('success', HTTPStatus.OK)
+            return 'success', HTTPStatus.OK
         else:
-            return make_response('failure', HTTPStatus.BAD_REQUEST)
+            return 'failure', HTTPStatus.BAD_REQUEST
 
     # returns a set of users with their details (id, and credit)
     @service.route("/find/<uuid:user_id>", methods=["GET"])
@@ -46,9 +47,9 @@ def create_app(db: Database):
         credit = 0
         success = True
         if success:
-            return make_response(jsonify(id=user_id, credit=credit), HTTPStatus.OK)
+            return {"id": user_id, "credit": credit}, HTTPStatus.OK
         else:
-            return make_response('user_id not found', HTTPStatus.NOT_FOUND)
+            return 'user_id not found', HTTPStatus.NOT_FOUND
 
     # returns the current credit of a user
     @service.route("/credit/<uuid:user_id>", methods=["GET"])
@@ -56,26 +57,28 @@ def create_app(db: Database):
         # TODO
         credit = db.get_credit(user_id)
         if credit is not None:
-            return make_response(jsonify({"credit": str(credit)}), HTTPStatus.OK)
+            return {"credit": credit}, HTTPStatus.OK
         else:
-            return make_response('failure', HTTPStatus.NOT_FOUND)
+            return 'failure', HTTPStatus.NOT_FOUND
 
-    # subtracts the amount from the credit of the user (e.g., to buy an order). Returns success or failure, depending on the credit status.
+    # subtracts the amount from the credit of the user (e.g., to buy an order).
+    # Returns success or failure, depending on the credit status.
     @service.route("/credit/subtract/<uuid:user_id>/<int:amount>", methods=["POST"])
     def credit_subtract(user_id, amount):
         success = db.credit_subtract(user_id, amount)
         if success:
-            return make_response('success', HTTPStatus.OK)
+            return 'success', HTTPStatus.OK
         else:
-            return make_response('failure', HTTPStatus.BAD_REQUEST)
+            return 'failure', HTTPStatus.BAD_REQUEST
 
-    # adds the amount from the credit of the user. Returns success or failure, depending on the credit status.
+    # adds the amount from the credit of the user. Returns success or failure,
+    # depending on the credit status.
     @service.route("/credit/add/<uuid:user_id>/<int:amount>", methods=["POST"])
     def credit_add(user_id, amount):
         success = db.credit_add(user_id, amount)
         if success:
-            return make_response('success', HTTPStatus.OK)
+            return 'success', HTTPStatus.OK
         else:
-            return make_response('failure', HTTPStatus.BAD_REQUEST)
+            return 'failure', HTTPStatus.BAD_REQUEST
 
     return service
