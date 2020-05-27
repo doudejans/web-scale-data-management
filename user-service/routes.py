@@ -43,23 +43,11 @@ def create_app(db: Database):
     # returns a set of users with their details (id, and credit)
     @service.route("/find/<uuid:user_id>", methods=["GET"])
     def find_user(user_id):
-        # TODO
-        credit = 0
-        success = True
-        if success:
+        credit = db.get_credit(user_id)
+        if credit is not None:
             return {"user_id": user_id, "credit": credit}, HTTPStatus.OK
         else:
             return 'user_id not found', HTTPStatus.NOT_FOUND
-
-    # returns the current credit of a user
-    @service.route("/credit/<uuid:user_id>", methods=["GET"])
-    def get_credit(user_id):
-        # TODO
-        credit = db.get_credit(user_id)
-        if credit is not None:
-            return {"credit": credit}, HTTPStatus.OK
-        else:
-            return 'failure', HTTPStatus.NOT_FOUND
 
     # subtracts the amount from the credit of the user (e.g., to buy an order).
     # Returns success or failure, depending on the credit status.
