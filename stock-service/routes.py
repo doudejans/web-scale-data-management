@@ -32,7 +32,8 @@ def create_app(db: Database):
     # Subtract from existing stock.
     @service.route('/subtract/<uuid:item_id>/<int:number>', methods=["POST"])
     def stock_subtract(item_id, number):
-        success = db.stock_subtract(item_id, number)
+        success, transaction_id = db.stock_subtract(item_id, number)
+        print(transaction_id)
         if success:
             return make_response('success', HTTPStatus.OK)
         else:
@@ -41,7 +42,8 @@ def create_app(db: Database):
     # Add to existing stock.
     @service.route('/add/<uuid:item_id>/<int:number>', methods=["POST"])
     def stock_add(item_id, number):
-        success = db.stock_add(item_id, number)
+        success, transaction_id = db.stock_add(item_id, number)
+        print(transaction_id)
         if success:
             return make_response('success', HTTPStatus.OK)
         else:
@@ -53,6 +55,16 @@ def create_app(db: Database):
         uuid = db.create_stock(price)
         if uuid is not None:
             return make_response(jsonify({"item_id": uuid}), HTTPStatus.OK)
+        else:
+            return make_response('failure', HTTPStatus.BAD_REQUEST)
+
+            # Create stock and return the ID.
+
+    @service.route('/rollback/<uuid:transaction_id>', methods=["POST"])
+    def rollback(transaction_id):
+        log = db.rollback(transaction_id)
+        if log:
+            return make_response('success', HTTPStatus.OK)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
