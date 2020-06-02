@@ -53,7 +53,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /order
+      - /orders
 
 ---
 kind: IngressRoute
@@ -65,7 +65,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/order`)
+  - match: PathPrefix(`/orders`)
     kind: Rule
     services:
     - name: order-service-cass-service
