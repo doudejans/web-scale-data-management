@@ -32,11 +32,11 @@ def create_app(db: Database):
             subtract_user_credit(user_id, order_cost)
         except DatabaseException:
             # Failed to store the paid status.
-            return {}, HTTPStatus.INTERNAL_SERVER_ERROR
+            return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR
         except CouldNotSubtractCredit:
             # Not enough credit.
             return {"error": "Not enough credit"}, HTTPStatus.BAD_REQUEST
-        return {}, HTTPStatus.CREATED
+        return 'success', HTTPStatus.CREATED
 
     @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def cancel_payment(user_id, order_id):
@@ -50,7 +50,7 @@ def create_app(db: Database):
                 add_user_credit(user_id, order_cost)
             except DatabaseException:
                 # Failed to update the database status.
-                return {}, HTTPStatus.INTERNAL_SERVER_ERROR
+                return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR
             except CouldNotAddCredit:
                 # If we couldn't revert the credit, rollback the status update.
                 db.set_payment_status(order_id, "PAID")
@@ -58,7 +58,7 @@ def create_app(db: Database):
             db.set_payment_status(order_id, "CANCELLED")
             return 'success', HTTPStatus.CREATED
         else:
-            return {}, HTTPStatus.BAD_REQUEST
+            return 'failure', HTTPStatus.BAD_REQUEST
 
     @service.route('/status/<uuid:order_id>', methods=["GET"])
     def get_order_status(order_id):
