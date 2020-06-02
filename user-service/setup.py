@@ -1,8 +1,8 @@
 import routes
 from config import retrieve_config
+from database.cassandra import CassandraDB
 from database.database import Database
 from database.postgres import PostgresDB
-from database.cassandra import CassandraDB
 
 
 def setup_app(application_name: str):
