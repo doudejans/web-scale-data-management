@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, make_response
+from flask import Flask
 from http import HTTPStatus
 from database.database import Database, DatabaseException
 from external_services import CouldNotSubtractCredit, \
@@ -20,7 +20,7 @@ def create_app(db: Database):
 
     @service.route('/health')
     def health():
-        return jsonify({"status": "ok", "database": db.DATABASE})
+        return {"status": "ok", "database": db.DATABASE}
 
     @service.route('/pay/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def complete_payment(user_id, order_id):
@@ -32,13 +32,11 @@ def create_app(db: Database):
             subtract_user_credit(user_id, order_cost)
         except DatabaseException:
             # Failed to store the paid status.
-            return make_response(jsonify({}),
-                                 HTTPStatus.INTERNAL_SERVER_ERROR)
+            return {}, HTTPStatus.INTERNAL_SERVER_ERROR
         except CouldNotSubtractCredit:
             # Not enough credit.
-            return make_response(jsonify({"error": "Not enough credit"}),
-                                 HTTPStatus.BAD_REQUEST)
-        return make_response(jsonify(), HTTPStatus.CREATED)
+            return {"error": "Not enough credit"}, HTTPStatus.BAD_REQUEST
+        return {}, HTTPStatus.CREATED
 
     @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def cancel_payment(user_id, order_id):
@@ -52,25 +50,24 @@ def create_app(db: Database):
                 add_user_credit(user_id, order_cost)
             except DatabaseException:
                 # Failed to update the database status.
-                return make_response(jsonify({}),
-                                     HTTPStatus.INTERNAL_SERVER_ERROR)
+                return {}, HTTPStatus.INTERNAL_SERVER_ERROR
             except CouldNotAddCredit:
                 # If we couldn't revert the credit, rollback the status update.
                 db.set_payment_status(order_id, "PAID")
         elif order_status is None:
             db.set_payment_status(order_id, "CANCELLED")
-            return make_response('success', HTTPStatus.CREATED)
+            return 'success', HTTPStatus.CREATED
         else:
-            return make_response(jsonify(), HTTPStatus.BAD_REQUEST)
+            return {}, HTTPStatus.BAD_REQUEST
 
     @service.route('/status/<uuid:order_id>', methods=["GET"])
     def get_order_status(order_id):
         order_status = db.get_payment_status(order_id)
         if order_status is not None:
-            return make_response(jsonify({
+            return {
                 "paid": order_status == "PAID"
-            }), HTTPStatus.OK)
+            }, HTTPStatus.OK
         else:
-            return make_response('failure', HTTPStatus.NOT_FOUND)
+            return 'failure', HTTPStatus.NOT_FOUND
 
     return service
