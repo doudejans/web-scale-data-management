@@ -26,6 +26,8 @@ def create_app(db: Database):
     def complete_payment(user_id, order_id):
         order_cost = retrieve_order_cost(order_id)
         try:
+            # This order was chosen as the possible rollback will be local
+            # (within this service) instead of using external requests.
             db.set_payment_status(order_id, "PAID")
             subtract_user_credit(user_id, order_cost)
         except DatabaseException:
@@ -44,6 +46,8 @@ def create_app(db: Database):
         if order_status == "PAID":
             order_cost = retrieve_order_cost(order_id)
             try:
+                # This order was chosen as the possible rollback will be local
+                # (within this service) instead of using external requests.
                 db.set_payment_status(order_id, "CANCELLED")
                 add_user_credit(user_id, order_cost)
             except DatabaseException:
