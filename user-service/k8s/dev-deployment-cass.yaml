@@ -51,7 +51,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /users
+      - /user
 
 ---
 kind: IngressRoute
@@ -63,7 +63,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/users`)
+  - match: PathPrefix(`/user`)
     kind: Rule
     services:
     - name: user-service-cass-service
