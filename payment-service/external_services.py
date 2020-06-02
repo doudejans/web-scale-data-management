@@ -14,6 +14,10 @@ class CouldNotSubtractCredit(Exception):
     pass
 
 
+class CouldNotAddCredit(Exception):
+    pass
+
+
 def retrieve_order_cost(order_id) -> float:
     """Retrieves the total cost of an order from the orders service."""
     resp = requests.get(f"{ORDER_SERVICE_BASE}/find/{order_id}")
@@ -31,3 +35,11 @@ def subtract_user_credit(user_id, amount):
                          f"{amount}")
     if resp.status_code != HTTPStatus.OK:
         raise CouldNotSubtractCredit
+
+
+def add_user_credit(user_id, amount):
+    """Adds the user credit using the user service."""
+    resp = requests.post(f"{USER_SERVICE_BASE}/credit/add/{user_id}/"
+                         f"{amount}")
+    if resp.status_code != HTTPStatus.OK:
+        raise CouldNotAddCredit()
