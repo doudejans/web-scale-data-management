@@ -41,7 +41,7 @@ def create_app(db: Database):
     @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def cancel_payment(user_id, order_id):
         order_status = db.get_payment_status(order_id)
-        if order_status is "PAID":
+        if order_status == "PAID":
             order_cost = retrieve_order_cost(order_id)
             try:
                 db.set_payment_status(order_id, "CANCELLED")
