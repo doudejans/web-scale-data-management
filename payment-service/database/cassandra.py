@@ -1,6 +1,6 @@
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster, Session
-from database.database import Database
+from database.database import Database, DatabaseException
 
 
 # This file connects to the cassandra database, it should expose the same
@@ -35,18 +35,24 @@ class CassandraDB(Database):
         ''')
 
     def set_payment_status(self, order_id, status):
-        self.connection.execute('''
-        INSERT INTO order_payment_status (order_id, status)
-        VALUES (%s, %s)
-        ''', (order_id, status))
+        try:
+            self.connection.execute('''
+            INSERT INTO order_payment_status (order_id, status)
+            VALUES (%s, %s)
+            ''', (order_id, status))
+        except Exception as e:
+            raise DatabaseException(e)
 
     def get_payment_status(self, order_id):
-        results = self.connection.execute('''
-        SELECT status FROM order_payment_status
-        WHERE order_id = %s
-        ''', (order_id,))
-        row = results.one()
-        if row is None:
-            return None
-        else:
-            return row.status
+        try:
+            results = self.connection.execute('''
+            SELECT status FROM order_payment_status
+            WHERE order_id = %s
+            ''', (order_id,))
+            row = results.one()
+            if row is None:
+                return None
+            else:
+                return row.status
+        except Exception  as e:
+            raise DatabaseException(e)

@@ -1,6 +1,12 @@
 import abc
 
 
+class DatabaseException(Exception):
+    """A generic exception to encapsulate both cassandra and postgres
+    exceptions"""
+    pass
+
+
 class Database(object):
     """Generic Database object, every different database connection should
     implement these functions."""
