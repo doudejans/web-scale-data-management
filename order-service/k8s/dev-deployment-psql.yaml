@@ -51,7 +51,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /postgres/order
+      - /postgres/orders
 
 ---
 kind: IngressRoute
@@ -63,7 +63,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/postgres/order`)
+  - match: PathPrefix(`/postgres/orders`)
     kind: Rule
     services:
     - name: order-service-psql-service
