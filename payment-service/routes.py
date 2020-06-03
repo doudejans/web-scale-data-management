@@ -45,8 +45,9 @@ def create_app(db: Database):
             try:
                 # This order was chosen as the possible rollback will be local
                 # (within this service) instead of using external requests.
-                db.set_payment_status(order_id, "CANCELLED")
+                db.set_payment_status(order_id, "REFUNDED")
                 add_user_credit(user_id, order_cost)
+                return 'success', HTTPStatus.OK
             except DatabaseException:
                 # Failed to update the database status.
                 return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR

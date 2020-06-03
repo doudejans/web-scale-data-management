@@ -33,7 +33,8 @@ class PostgresDB(Database):
         DO $$
         BEGIN
             IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
-                CREATE TYPE payment_status AS ENUM ('PAID', 'FAILED', CANCELLED');
+                CREATE TYPE payment_status AS ENUM ('PAID', 'FAILED', 
+'CANCELLED', 'REFUNDED');
                 CREATE TABLE IF NOT EXISTS order_payment_status (
                     order_id uuid,
                     status payment_status,
