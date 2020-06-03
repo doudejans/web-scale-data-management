@@ -56,7 +56,7 @@ def create_app(db: Database):
                 db.set_payment_status(order_id, "PAID")
                 return {"error": "Unable to return credit"}, HTTPStatus.BAD_REQUEST
         elif order_status is None:
-            db.insert_payment_status(order_id, "CANCELLED", order_cost)
+            db.insert_payment_status(order_id, "CANCELLED", None)
             return 'success', HTTPStatus.CREATED
         else:
             return 'failure', HTTPStatus.BAD_REQUEST
