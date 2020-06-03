@@ -31,7 +31,14 @@ def create_app(db: Database):
 
         # TODO: contact payment service for status
 
-        return jsonify({'order': order})
+        paid = None
+        total_cost = None
+
+        return jsonify({
+            'paid': paid,
+            'total_cost': total_cost,
+            **order
+        })
 
     @service.route('/addItem/<uuid:order_id>/<uuid:item_id>', methods=['POST'])
     def add_item_to_order(order_id: UUID, item_id: UUID):

@@ -45,7 +45,7 @@ class CassandraDB(Database):
             return {
                 'order_id': order_id,
                 'user_id': user_id,
-                'items': [{'item_id': item[0], 'amount': item[1]} for item in items]
+                'items': [item_id for item in items for item_id in [item[0] for _ in range(0, item[1])]]
             }
         else:
             return None
