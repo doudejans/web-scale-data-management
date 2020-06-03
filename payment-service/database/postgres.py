@@ -44,8 +44,10 @@ class PostgresDB(Database):
             with self.__get_cursor() as cur:
                 cur.execute("""
                 INSERT INTO order_payment_status (order_id, status)
-                VALUES (%s, %s);
-                """, (order_id, status))
+                VALUES (%s, %s)
+                ON CONFLICT (order_id)
+                DO UPDATE SET status = excluded.status;""",
+                            (order_id, status))
         except Exception as e:
             raise DatabaseException(e)
 
