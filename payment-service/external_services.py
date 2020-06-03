@@ -19,7 +19,7 @@ def subtract_user_credit(user_id, amount):
     resp = requests.post(f"{USER_SERVICE_BASE}/credit/subtract/{user_id}/"
                          f"{amount}")
     if resp.status_code != HTTPStatus.OK:
-        raise CouldNotSubtractCredit
+        raise CouldNotSubtractCredit()
 
 
 def add_user_credit(user_id, amount):
