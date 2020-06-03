@@ -62,9 +62,8 @@ def create_app(db: Database):
     @service.route('/status/<uuid:order_id>', methods=["GET"])
     def get_order_status(order_id):
         order_status, _ = db.get_payment(order_id)
-        if order_status is not None:
-            return {
-                "paid": order_status == "PAID"
-            }, HTTPStatus.OK
+        return {
+            "paid": order_status == "PAID"
+        }, HTTPStatus.OK
 
     return service
