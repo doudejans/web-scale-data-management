@@ -24,19 +24,24 @@ def create_app(db: Database):
     @service.route('/pay/<uuid:user_id>/<uuid:order_id>/<int:amount>', methods=[
         "POST"])
     def complete_payment(user_id, order_id, amount):
-        try:
-            # This order was chosen as the possible rollback will be local
-            # (within this service) instead of using external requests.
-            db.insert_payment_status(order_id, "PAID", amount)
-            subtract_user_credit(user_id, amount)
-        except DatabaseException:
-            # Failed to store the paid status.
-            return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR
-        except CouldNotSubtractCredit:
-            # Not enough credit.
-            db.set_payment_status(order_id, "FAILED")
-            return {"error": "Not enough credit"}, HTTPStatus.BAD_REQUEST
-        return 'success', HTTPStatus.CREATED
+        order_status, _ = db.get_payment(order_id)
+        if order_status == "PAID":
+            # Prevent order from being payed again.
+            return 'success', HTTPStatus.OK
+        else:
+            try:
+                # This order was chosen as the possible rollback will be local
+                # (within this service) instead of using external requests.
+                db.insert_payment_status(order_id, "PAID", amount)
+                subtract_user_credit(user_id, amount)
+                return 'success', HTTPStatus.CREATED
+            except DatabaseException:
+                # Failed to store the paid status.
+                return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR
+            except CouldNotSubtractCredit:
+                # Not enough credit.
+                db.set_payment_status(order_id, "FAILED")
+                return {"error": "Not enough credit"}, HTTPStatus.BAD_REQUEST
 
     @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def cancel_payment(user_id, order_id):
