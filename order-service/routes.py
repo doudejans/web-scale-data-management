@@ -1,8 +1,8 @@
 from uuid import uuid4, UUID
-
 from flask import Flask, jsonify
 
 from database.database import Database
+from external_services import get_payment_status, CouldNotRetrievePaymentStatus
 
 
 def create_app(db: Database):
@@ -31,7 +31,11 @@ def create_app(db: Database):
 
         # TODO: contact payment service for status
 
-        paid = None
+        try:
+            paid = get_payment_status(order_id)
+        except CouldNotRetrievePaymentStatus:
+            return jsonify({'message': 'Could not retrieve payment status'}), 50
+
         total_cost = None
 
         return jsonify({
