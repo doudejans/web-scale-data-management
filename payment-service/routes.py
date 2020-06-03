@@ -54,6 +54,7 @@ def create_app(db: Database):
             except CouldNotAddCredit:
                 # If we couldn't revert the credit, rollback the status update.
                 db.set_payment_status(order_id, "PAID")
+                return {"error": "Unable to return credit"}, HTTPStatus.BAD_REQUEST
         elif order_status is None:
             db.insert_payment_status(order_id, "CANCELLED", order_cost)
             return 'success', HTTPStatus.CREATED
