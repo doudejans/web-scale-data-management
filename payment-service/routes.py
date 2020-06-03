@@ -30,13 +30,10 @@ def create_app(db: Database):
     @service.route('/status/<uuid:order_id>', methods=["GET"])
     def get_order_status(order_id):
         order_status = db.get_payment_status(order_id)
-        if order_status is not None:
-            return make_response(jsonify({
-                "order_id": order_id,
-                "status": order_status
-            }), HTTPStatus.OK)
-        else:
-            return make_response(jsonify(), HTTPStatus.NOT_FOUND)
+        return make_response(jsonify({
+            "order_id": order_id,
+            "status": order_status == "PAID"
+        }), HTTPStatus.OK)
 
     return service
 
