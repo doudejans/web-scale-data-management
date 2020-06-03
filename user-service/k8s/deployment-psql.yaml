@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service-psql
+spec:
+  selector:
+    matchLabels:
+      app: user-service-psql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: user-service-psql
+    spec:
+      containers:
+      - name: user-service
+        image: gcr.io/web-scale-data-management/user-service:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "postgres"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "postgresql"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: postgresql-password
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service-psql-service
+spec:
+  selector:
+    app: user-service-psql
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: user-service-psql-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /postgres/users
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: user-service-psql-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/postgres/users`)
+    kind: Rule
+    services:
+    - name: user-service-psql-service
+      port: 80
+    middlewares:
+      - name: user-service-psql-stripprefix

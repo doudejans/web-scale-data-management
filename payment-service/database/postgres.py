@@ -16,10 +16,8 @@ class PostgresDB(Database):
         connection_config = config['connection']
         self.connection = psycopg2.connect(host=connection_config["host"],
                                            user=connection_config["user"],
-                                           database=connection_config[
-                                               "database"],
-                                           password=connection_config[
-                                               "password"])
+                                           database=connection_config["database"],
+                                           password=connection_config["password"])
         # TODO: Add specific connection code, if needed.
         self.connection.autocommit = True
         if setup:
@@ -32,12 +30,17 @@ class PostgresDB(Database):
     def __setup_database(self, config):
         cur = self.__get_cursor()
         cur.execute(f"""
-        CREATE TYPE payment_status AS ENUM ('PAID', 'CANCELLED');
-        CREATE TABLE IF NOT EXISTS order_payment_status (
-            order_id uuid,
-            status payment_status,
-            amount integer
-        );
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
+                CREATE TYPE payment_status AS ENUM ('PAID', 'FAILED', CANCELLED');
+                CREATE TABLE IF NOT EXISTS order_payment_status (
+                    order_id uuid,
+                    status payment_status,
+                    amount integer
+                );
+            END IF;
+        END$$;
         """)
 
     def insert_payment_status(self, order_id, status, amount):

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-service-psql
+spec:
+  selector:
+    matchLabels:
+      app: stock-service-psql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: stock-service-psql
+    spec:
+      containers:
+      - name: stock-service
+        image: gcr.io/web-scale-data-management/stock-service:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "postgres"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "postgresql"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: postgresql-password
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-service-psql-service
+spec:
+  selector:
+    app: stock-service-psql
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stock-service-psql-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /postgres/stock
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: stock-service-psql-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/postgres/stock`)
+    kind: Rule
+    services:
+    - name: stock-service-psql-service
+      port: 80
+    middlewares:
+      - name: stock-service-psql-stripprefix

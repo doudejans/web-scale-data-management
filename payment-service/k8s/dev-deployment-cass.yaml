@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service-cass
+spec:
+  selector:
+    matchLabels:
+      app: payment-service-cass
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: payment-service-cass
+    spec:
+      containers:
+      - name: payment-service
+        image: payment-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "cassandra"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "cassandra"
+        - name: DB_USER
+          value: "cassandra"
+        - name: DB_PASS
+          value: "servicedev"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service-cass-service
+spec:
+  selector:
+    app: payment-service-cass
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: payment-service-cass-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /payment
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: payment-service-cass-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/payment`)
+    kind: Rule
+    services:
+    - name: payment-service-cass-service
+      port: 80
+    middlewares:
+      - name: payment-service-cass-stripprefix

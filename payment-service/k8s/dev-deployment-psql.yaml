@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service-psql
+spec:
+  selector:
+    matchLabels:
+      app: payment-service-psql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: payment-service-psql
+    spec:
+      containers:
+      - name: payment-service
+        image: payment-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_TYPE
+          value: "postgres"
+        - name: DB_SETUP
+          value: "True"
+        - name: DB_HOST
+          value: "postgresql"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          value: "servicedev"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service-psql-service
+spec:
+  selector:
+    app: payment-service-psql
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: payment-service-psql-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /postgres/payment
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: payment-service-psql-ingress
+
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: PathPrefix(`/postgres/payment`)
+    kind: Rule
+    services:
+    - name: payment-service-psql-service
+      port: 80
+    middlewares:
+      - name: payment-service-psql-stripprefix
