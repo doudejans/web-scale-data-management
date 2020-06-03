@@ -35,7 +35,7 @@ class CassandraDB(Database):
         results = self.connection.execute('''
         SELECT user_id FROM orders WHERE order_id = %s
         ''', (order_id, ))
-        user_id = results.one()
+        user_id = results.one()[0]
 
         if user_id:
             items = self.connection.execute('''
