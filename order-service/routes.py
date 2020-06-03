@@ -2,7 +2,7 @@ from uuid import uuid4, UUID
 from flask import Flask, jsonify
 
 from database.database import Database
-from external_services import get_payment_status, CouldNotRetrievePaymentStatus
+from external_services import get_payment_status, get_total_item_cost, CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost
 
 
 def create_app(db: Database):
@@ -29,14 +29,13 @@ def create_app(db: Database):
         if order is None:
             return jsonify({'message': 'Order not found'}), 404
 
-        # TODO: contact payment service for status
-
         try:
             paid = get_payment_status(order_id)
+            total_cost = get_total_item_cost(order['items'])
         except CouldNotRetrievePaymentStatus:
-            return jsonify({'message': 'Could not retrieve payment status'}), 50
-
-        total_cost = None
+            return jsonify({'message': 'Could not retrieve payment status'}), 500
+        except CouldNotRetrieveItemCost:
+            return jsonify({'message': 'Could not retrieve order item cost'}), 500
 
         return jsonify({
             'paid': paid,
