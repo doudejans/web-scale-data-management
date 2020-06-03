@@ -1,9 +1,8 @@
 from flask import Flask
 from http import HTTPStatus
 from database.database import Database, DatabaseException
-from external_services import CouldNotSubtractCredit, \
-    CouldNotAddCredit, retrieve_order_cost, subtract_user_credit, \
-    add_user_credit
+from external_services import CouldNotSubtractCredit, CouldNotAddCredit, \
+    subtract_user_credit, add_user_credit
 
 
 # This is the main file of the service, handling with the different routes
