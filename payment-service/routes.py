@@ -22,14 +22,14 @@ def create_app(db: Database):
     def health():
         return {"status": "ok", "database": db.DATABASE}
 
-    @service.route('/pay/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
-    def complete_payment(user_id, order_id):
-        order_cost = retrieve_order_cost(order_id)
+    @service.route('/pay/<uuid:user_id>/<uuid:order_id>/<int:amount>', methods=[
+        "POST"])
+    def complete_payment(user_id, order_id, amount):
         try:
             # This order was chosen as the possible rollback will be local
             # (within this service) instead of using external requests.
-            db.set_payment_status(order_id, "PAID")
-            subtract_user_credit(user_id, order_cost)
+            db.insert_payment_status(order_id, "PAID", amount)
+            subtract_user_credit(user_id, amount)
         except DatabaseException:
             # Failed to store the paid status.
             return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR
@@ -41,9 +41,8 @@ def create_app(db: Database):
 
     @service.route('/cancel/<uuid:user_id>/<uuid:order_id>', methods=["POST"])
     def cancel_payment(user_id, order_id):
-        order_status = db.get_payment_status(order_id)
+        order_status, order_cost = db.get_payment(order_id)
         if order_status == "PAID":
-            order_cost = retrieve_order_cost(order_id)
             try:
                 # This order was chosen as the possible rollback will be local
                 # (within this service) instead of using external requests.
@@ -56,19 +55,17 @@ def create_app(db: Database):
                 # If we couldn't revert the credit, rollback the status update.
                 db.set_payment_status(order_id, "PAID")
         elif order_status is None:
-            db.set_payment_status(order_id, "CANCELLED")
+            db.insert_payment_status(order_id, "CANCELLED", order_cost)
             return 'success', HTTPStatus.CREATED
         else:
             return 'failure', HTTPStatus.BAD_REQUEST
 
     @service.route('/status/<uuid:order_id>', methods=["GET"])
     def get_order_status(order_id):
-        order_status = db.get_payment_status(order_id)
+        order_status, _ = db.get_payment(order_id)
         if order_status is not None:
             return {
                 "paid": order_status == "PAID"
             }, HTTPStatus.OK
-        else:
-            return 'failure', HTTPStatus.NOT_FOUND
 
     return service
