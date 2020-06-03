@@ -16,7 +16,7 @@ def create_app(db: Database):
     def create_order(user_id: UUID):
         order_id = uuid4()
         db.add_order(order_id, user_id)
-        return jsonify({'status': 201, 'order_id': str(order_id)}), 201
+        return jsonify({'order_id': str(order_id)}), 201
 
     @service.route('/remove/<uuid:order_id>', methods=['DELETE'])
     def remove_order(order_id: UUID):
