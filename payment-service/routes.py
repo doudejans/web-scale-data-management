@@ -35,6 +35,7 @@ def create_app(db: Database):
             return 'failure', HTTPStatus.INTERNAL_SERVER_ERROR
         except CouldNotSubtractCredit:
             # Not enough credit.
+            db.set_payment_status(order_id, "FAILED")
             return {"error": "Not enough credit"}, HTTPStatus.BAD_REQUEST
         return 'success', HTTPStatus.CREATED
 
