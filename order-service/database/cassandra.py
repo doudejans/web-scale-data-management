@@ -35,9 +35,10 @@ class CassandraDB(Database):
         results = self.connection.execute('''
         SELECT user_id FROM orders WHERE order_id = %s
         ''', (order_id, ))
-        user_id = results.one()
+        row = results.one()
 
-        if user_id:
+        if row:
+            user_id = row[0]
             items = self.connection.execute('''
             SELECT item_id, amount FROM order_items WHERE order_id = %s
             ''', (order_id, ))
@@ -45,7 +46,7 @@ class CassandraDB(Database):
             return {
                 'order_id': order_id,
                 'user_id': user_id,
-                'items': [{'item_id': item[0], 'amount': item[1]} for item in items]
+                'items': [item_id for item in items for item_id in [item[0] for _ in range(0, item[1])]]
             }
         else:
             return None

@@ -32,7 +32,7 @@ def create_app(db: Database):
         order_status = db.get_payment_status(order_id)
         return make_response(jsonify({
             "order_id": order_id,
-            "status": order_status == "PAID"
+            "paid": order_status == "PAID"
         }), HTTPStatus.OK)
 
     return service
