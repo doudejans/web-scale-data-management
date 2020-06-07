@@ -23,3 +23,7 @@ Add a given number of stock items to the item count in the stock.
 ```POST /stock/item/create/{price}```
 
 Create an item along with its price and returns its ID.
+
+### Batch subtract
+```curl -i -X POST -H "Content-Type: application/json" -d "@data.json"  http://localhost:5000/batch/batchSubtract```
+

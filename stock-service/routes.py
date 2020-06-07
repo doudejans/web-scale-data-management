@@ -1,7 +1,8 @@
+import uuid
 from http import HTTPStatus
 
-from flask import Flask, jsonify, make_response
-from database.database import Database
+from flask import Flask, jsonify, make_response, request
+from database.database import Database, DatabaseException
 
 
 # This is the main file of the service, handling with the different routes
@@ -32,8 +33,7 @@ def create_app(db: Database):
     # Subtract from existing stock.
     @service.route('/subtract/<uuid:item_id>/<int:number>', methods=["POST"])
     def stock_subtract(item_id, number):
-        success, transaction_id = db.stock_subtract(item_id, number)
-        print(transaction_id)
+        success = db.stock_subtract(item_id, number)
         if success:
             return make_response('success', HTTPStatus.OK)
         else:
@@ -42,8 +42,7 @@ def create_app(db: Database):
     # Add to existing stock.
     @service.route('/add/<uuid:item_id>/<int:number>', methods=["POST"])
     def stock_add(item_id, number):
-        success, transaction_id = db.stock_add(item_id, number)
-        print(transaction_id)
+        success = db.stock_add(item_id, number)
         if success:
             return make_response('success', HTTPStatus.OK)
         else:
@@ -60,11 +59,20 @@ def create_app(db: Database):
 
             # Create stock and return the ID.
 
-    @service.route('/rollback/<uuid:transaction_id>', methods=["POST"])
-    def rollback(transaction_id):
-        log = db.rollback(transaction_id)
-        if log:
-            return make_response('success', HTTPStatus.OK)
+    @service.route('/batch/batchSubtract', methods=["POST"])
+    def batch_subtract():
+        content = request.json
+        if content is not None:
+            res = []
+            try:
+                for item in content["items"]:
+                    db.stock_subtract(uuid.UUID(item["item_id"]), 1)
+                    res.append(item["item_id"])
+                return make_response('success', HTTPStatus.OK)
+            except DatabaseException:
+                for item in res:
+                    db.stock_add(uuid.UUID(item), 1)
+                return make_response('failure', HTTPStatus.BAD_REQUEST)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
