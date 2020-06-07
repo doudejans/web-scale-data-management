@@ -3,7 +3,7 @@ from flask import Flask, jsonify
 
 from database.database import Database
 from external_services import get_payment_status, get_total_item_cost, initiate_payment, subtract_stock, \
-    retract_payment, \
+    retract_payment, CouldNotRetractPayment, \
     CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost, CouldNotInitiatePayment, CouldNotSubtractStock
 
 
@@ -77,10 +77,13 @@ def create_app(db: Database):
         except CouldNotInitiatePayment:
             return jsonify({'message': 'Payment failed'}), 400
         except CouldNotSubtractStock:
-            retract_payment(order['user_id'], order['order_id'])
-            return jsonify({'message': 'Could not subtract stock'}), 400
+            try:
+                retract_payment(order['user_id'], order['order_id'])
+                return jsonify({'message': 'Could not subtract stock'}), 400
+            except CouldNotRetractPayment:
+                return jsonify({'message': 'Checkout transaction failed'}), 500
 
-        return jsonify({'message': 'Not implemented yet'})
+        return jsonify({'message': 'success'})
 
     return service
 
