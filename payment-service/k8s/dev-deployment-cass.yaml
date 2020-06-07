@@ -29,6 +29,8 @@ spec:
           value: "cassandra"
         - name: DB_PASS
           value: "servicedev"
+        - name: USER_SERVICE
+          value: "http://user-service-cass-service"
 
 ---
 apiVersion: v1

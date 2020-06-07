@@ -31,6 +31,8 @@ spec:
             secretKeyRef:
               name: postgresql
               key: postgresql-password
+        - name: USER_SERVICE
+          value: "http://user-service-psql-service"
 
 ---
 apiVersion: v1
