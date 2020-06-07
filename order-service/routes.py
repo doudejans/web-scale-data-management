@@ -2,7 +2,9 @@ from uuid import uuid4, UUID
 from flask import Flask, jsonify
 
 from database.database import Database
-from external_services import get_payment_status, get_total_item_cost, initiate_payment, CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost, CouldNotInitiatePayment
+from external_services import get_payment_status, get_total_item_cost, initiate_payment, subtract_stock, \
+    retract_payment, \
+    CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost, CouldNotInitiatePayment, CouldNotSubtractStock
 
 
 def create_app(db: Database):
@@ -68,13 +70,16 @@ def create_app(db: Database):
         try:
             total_cost = get_total_item_cost(order['items'])
             initiate_payment(order['user_id'], order_id, total_cost)
+            subtract_stock(order['items'])
+
         except CouldNotRetrieveItemCost:
             return jsonify({'message': 'Could not retrieve order item cost'}), 500
         except CouldNotInitiatePayment:
-            return jsonify({'message': 'Payment failed'}), 500
+            return jsonify({'message': 'Payment failed'}), 400
+        except CouldNotSubtractStock:
+            retract_payment(order['user_id'], order['order_id'])
+            return jsonify({'message': 'Could not subtract stock'}), 400
 
-        # TODO: Contact stock service
-        # TODO: Contact payment service
         return jsonify({'message': 'Not implemented yet'})
 
     return service
