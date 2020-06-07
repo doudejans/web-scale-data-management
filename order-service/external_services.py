@@ -12,6 +12,9 @@ class CouldNotRetrievePaymentStatus(Exception):
 class CouldNotRetrieveItemCost(Exception):
     pass
 
+class CouldNotInitiatePayment(Exception):
+    pass
+
 
 def get_payment_status(order_id):
     res = requests.get(f"{PAYMENT_SERVICE_BASE}/status/{order_id}")
@@ -20,6 +23,13 @@ def get_payment_status(order_id):
         return res.json()['paid']
     else:
         raise CouldNotRetrievePaymentStatus()
+
+
+def initiate_payment(user_id, order_id, amount):
+    res = requests.get(f"{PAYMENT_SERVICE_BASE}/pay/{user_id}/{order_id}/{amount}")
+
+    if not res.ok:
+        raise CouldNotInitiatePayment()
 
 
 def get_total_item_cost(items):

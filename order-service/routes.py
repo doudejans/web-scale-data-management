@@ -2,7 +2,7 @@ from uuid import uuid4, UUID
 from flask import Flask, jsonify
 
 from database.database import Database
-from external_services import get_payment_status, get_total_item_cost, CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost
+from external_services import get_payment_status, get_total_item_cost, initiate_payment, CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost, CouldNotInitiatePayment
 
 
 def create_app(db: Database):
@@ -63,6 +63,16 @@ def create_app(db: Database):
 
     @service.route('/checkout/<uuid:order_id>', methods=['POST'])
     def checkout_order(order_id: UUID):
+        order = db.get_order(order_id)
+
+        try:
+            total_cost = get_total_item_cost(order['items'])
+            initiate_payment(order['user_id'], order_id, total_cost)
+        except CouldNotRetrieveItemCost:
+            return jsonify({'message': 'Could not retrieve order item cost'}), 500
+        except CouldNotInitiatePayment:
+            return jsonify({'message': 'Payment failed'}), 500
+
         # TODO: Contact stock service
         # TODO: Contact payment service
         return jsonify({'message': 'Not implemented yet'})
