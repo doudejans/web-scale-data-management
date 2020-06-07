@@ -31,6 +31,8 @@ spec:
             secretKeyRef:
               name: cassandra
               key: cassandra-password
+        - name: USER_SERVICE
+          value: "http://user-service-cass-service"
 
 ---
 apiVersion: v1

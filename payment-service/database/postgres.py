@@ -1,6 +1,6 @@
 import psycopg2
 import psycopg2.extras
-from database.database import Database
+from database.database import Database, DatabaseException
 
 psycopg2.extras.register_uuid()
 
@@ -33,39 +33,55 @@ class PostgresDB(Database):
         DO $$
         BEGIN
             IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
-                CREATE TYPE payment_status AS ENUM ('PAID', 'CANCELLED');
+                CREATE TYPE payment_status AS ENUM ('PAID', 'FAILED', 
+'CANCELLED', 'REFUNDED');
                 CREATE TABLE IF NOT EXISTS order_payment_status (
                     order_id uuid,
-                    status payment_status
+                    status payment_status,
+                    amount integer
                 );
             END IF;
         END$$;
-        
         """)
+
+    def insert_payment_status(self, order_id, status, amount):
+        try:
+            with self.__get_cursor() as cur:
+                cur.execute("""
+                INSERT INTO order_payment_status (order_id, status, amount)
+                VALUES (%s, %s, %s);
+                """, (order_id, status, amount))
+        except Exception as e:
+            raise DatabaseException(e)
 
     def set_payment_status(self, order_id, status):
         """Set the payment status for a specific order.
         """
-        with self.__get_cursor() as cur:
-            cur.execute("""
-            INSERT INTO order_payment_status (order_id, status)
-            VALUES (%s, %s);
-            """, (order_id, status))
+        try:
+            with self.__get_cursor() as cur:
+                cur.execute("""
+                UPDATE order_payment_status
+                SET status = %s
+                WHERE order_id = %s""",
+                            (status, order_id))
+        except Exception as e:
+            raise DatabaseException(e)
 
-    def get_payment_status(self, order_id):
+    def get_payment(self, order_id):
         """Retrieve the status of a specific order.
 
         If no order matching the order_id could be found None is returned.
         """
-        with self.__get_cursor() as cur:
-            cur.execute("""
-            SELECT status FROM order_payment_status
-            WHERE order_id = %s
-            """, (order_id,))
-            if cur.rowcount == 0:
-                return None
-            # The row contains one item at idx 0 which is the status.
-            result = cur.fetchone()[0]
-            return result
-
-
+        try:
+            with self.__get_cursor() as cur:
+                cur.execute("""
+                SELECT status, amount FROM order_payment_status
+                WHERE order_id = %s
+                """, (order_id,))
+                if cur.rowcount == 0:
+                    return None, None
+                # The row contains one item at idx 0 which is the status.
+                result = cur.fetchone()
+                return result[0], result[1]
+        except Exception as e:
+            raise DatabaseException(e)

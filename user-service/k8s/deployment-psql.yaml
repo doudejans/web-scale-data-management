@@ -53,7 +53,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /postgres/user
+      - /postgres/users
 
 ---
 kind: IngressRoute
@@ -65,7 +65,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/postgres/user`)
+  - match: PathPrefix(`/postgres/users`)
     kind: Rule
     services:
     - name: user-service-psql-service

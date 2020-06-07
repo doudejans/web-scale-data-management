@@ -29,6 +29,10 @@ spec:
           value: "cassandra"
         - name: DB_PASS
           value: "servicedev"
+        - name: STOCK_SERVICE
+          value: "http://stock-service-cass-service"
+        - name: PAYMENT_SERVICE
+          value: "http://payment-service-cass-service"
 
 ---
 apiVersion: v1
@@ -51,7 +55,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /order
+      - /orders
 
 ---
 kind: IngressRoute
@@ -63,7 +67,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/order`)
+  - match: PathPrefix(`/orders`)
     kind: Rule
     services:
     - name: order-service-cass-service

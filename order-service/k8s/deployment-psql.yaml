@@ -31,6 +31,10 @@ spec:
             secretKeyRef:
               name: postgresql
               key: postgresql-password
+        - name: STOCK_SERVICE
+          value: "http://stock-service-psql-service"
+        - name: PAYMENT_SERVICE
+          value: "http://payment-service-psql-service"
 
 ---
 apiVersion: v1
@@ -53,7 +57,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /postgres/order
+      - /postgres/orders
 
 ---
 kind: IngressRoute
@@ -65,7 +69,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/postgres/order`)
+  - match: PathPrefix(`/postgres/orders`)
     kind: Rule
     services:
     - name: order-service-psql-service
