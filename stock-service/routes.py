@@ -2,7 +2,7 @@ import uuid
 from http import HTTPStatus
 
 from flask import Flask, jsonify, make_response, request
-from database.database import Database, DatabaseException
+from database.database import Database
 
 
 # This is the main file of the service, handling with the different routes

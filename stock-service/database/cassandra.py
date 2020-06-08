@@ -1,7 +1,7 @@
 import uuid
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster, Session
-from database.database import Database, DatabaseException
+from database.database import Database
 
 
 # This file connects to the cassandra database, it should expose the same
