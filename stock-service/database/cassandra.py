@@ -34,69 +34,61 @@ class CassandraDB(Database):
         self.connection.execute(f'''
         CREATE TABLE IF NOT EXISTS stock (
             item_id uuid PRIMARY KEY,
-            amount int,
             price int
+        );
+        ''')
+        self.connection.execute(f'''
+        CREATE TABLE IF NOT EXISTS stock_counter (
+            item_id uuid PRIMARY KEY,
+            amount counter
         );
         ''')
 
     def find_stock(self, item_id):
-        res = self.connection.execute(f'''
-        SELECT amount, price FROM stock
+        price = self.connection.execute(f'''
+        SELECT price FROM stock
         WHERE item_id = %s;
         ''', (item_id,)).one()
-        if res is None:
+        amount = self.get_stock(item_id)
+        if price is None or amount is None:
             return None
         else:
-            return res.amount, res.price
+            return amount[0], price[0]
 
     def stock_subtract(self, item_id, number):
-        # get current stock amount
-        res = self.get_stock(item_id)
-        if res is None:
-            return False
-        amount = res.amount
-        # check if subtracted number is too high
-        if number > amount:
-            return False
-        # set new stock amount
-        subtraction = amount - number
         res = self.connection.execute(f'''
-               UPDATE stock
-               SET amount = %s
-               WHERE item_id = %s
-               IF amount = %s;
-               ''', (subtraction, item_id, amount)).one()
+               UPDATE stock_counter
+               SET amount = amount - %s
+               WHERE item_id = %s AND amount >= %s;
+               ''', (number, item_id, number)).one()
 
         return res.applied
 
     def stock_add(self, item_id, number):
-        # get current stock amount
-        res = self.get_stock(item_id)
-        if res is None:
-            return False
-        amount = res.amount
-        # set new stock amount
-        addition = amount + number
         res = self.connection.execute(f'''
-               UPDATE stock
-               SET amount = %s
-               WHERE item_id = %s
-               IF amount = %s;
-               ''', (addition, item_id, amount)).one()
+               UPDATE stock_counter
+               SET amount = amount + %s
+               WHERE item_id = %s;
+               ''', (number, item_id)).one()
 
         return res.applied
 
     def create_stock(self, price):
         item_id = uuid.uuid4()
         self.connection.execute(f'''
-                INSERT INTO stock (item_id, amount, price)
-                VALUES (%s, 0, %s);
+                INSERT INTO stock (item_id, price)
+                VALUES (%s, %s);
                 ''', (item_id, price))
+        self.connection.execute(f'''
+                UPDATE stock_counter 
+                SET amount = amount + 0
+                WHERE item_id = %s;
+                ''', (item_id,))
         return str(item_id)
 
     def get_stock(self, item_id):
         return self.connection.execute(f'''
-               SELECT amount FROM stock
+               SELECT amount FROM stock_counter
                WHERE item_id = %s;
                ''', (item_id,)).one()
 
