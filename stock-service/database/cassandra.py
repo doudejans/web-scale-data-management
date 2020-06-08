@@ -40,68 +40,60 @@ class CassandraDB(Database):
         ''')
 
     def find_stock(self, item_id):
-        try:
-            res = self.connection.execute(f'''
-            SELECT amount, price FROM stock
-            WHERE item_id = %s;
-            ''', (item_id,)).one()
-            return None if res is None else res.amount, res.price
-        except Exception as e:
-            raise DatabaseException(e)
+        res = self.connection.execute(f'''
+        SELECT amount, price FROM stock
+        WHERE item_id = %s;
+        ''', (item_id,)).one()
+        print(res)
+        if res is None:
+            return None
+        else:
+            return res.amount, res.price
 
     def stock_subtract(self, item_id, number):
-        try:
-            # get current stock amount
-            res = self.get_stock(item_id)
-            if res is None:
-                return False
-            amount = res.amount
-            # check if subtracted number is too high
-            if number > amount:
-                return False
-            # set new stock amount
-            subtraction = amount - number
-            res = self.connection.execute(f'''
-                   UPDATE stock
-                   SET amount = %s
-                   WHERE item_id = %s
-                   IF amount = %s;
-                   ''', (subtraction, item_id, amount)).one()
+        # get current stock amount
+        res = self.get_stock(item_id)
+        if res is None:
+            return False
+        amount = res.amount
+        # check if subtracted number is too high
+        if number > amount:
+            return False
+        # set new stock amount
+        subtraction = amount - number
+        res = self.connection.execute(f'''
+               UPDATE stock
+               SET amount = %s
+               WHERE item_id = %s
+               IF amount = %s;
+               ''', (subtraction, item_id, amount)).one()
 
-            return res.applied
-        except Exception as e:
-            raise DatabaseException(e)
+        return res.applied
 
     def stock_add(self, item_id, number):
-        try:
-            # get current stock amount
-            res = self.get_stock(item_id)
-            if res is None:
-                return False
-            amount = res.amount
-            # set new stock amount
-            addition = amount + number
-            res = self.connection.execute(f'''
-                   UPDATE stock
-                   SET amount = %s
-                   WHERE item_id = %s
-                   IF amount = %s;
-                   ''', (addition, item_id, amount)).one()
+        # get current stock amount
+        res = self.get_stock(item_id)
+        if res is None:
+            return False
+        amount = res.amount
+        # set new stock amount
+        addition = amount + number
+        res = self.connection.execute(f'''
+               UPDATE stock
+               SET amount = %s
+               WHERE item_id = %s
+               IF amount = %s;
+               ''', (addition, item_id, amount)).one()
 
-            return res.applied
-        except Exception as e:
-            raise DatabaseException(e)
+        return res.applied
 
     def create_stock(self, price):
-        try:
-            item_id = uuid.uuid4()
-            self.connection.execute(f'''
-                    INSERT INTO stock (item_id, amount, price)
-                    VALUES (%s, 0, %s);
-                    ''', (item_id, price))
-            return str(item_id)
-        except Exception as e:
-            raise DatabaseException(e)
+        item_id = uuid.uuid4()
+        self.connection.execute(f'''
+                INSERT INTO stock (item_id, amount, price)
+                VALUES (%s, 0, %s);
+                ''', (item_id, price))
+        return str(item_id)
 
     def get_stock(self, item_id):
         return self.connection.execute(f'''
@@ -113,10 +105,10 @@ class CassandraDB(Database):
         log = []
         # Subtract all items.
         for item_id in items:
-            try:
-                self.stock_subtract(item_id, 1)
+            success = self.stock_subtract(item_id, 1)
+            if success:
                 log.append(item_id)
-            except DatabaseException:
+            else:
                 # Re-add all succeeded subtracted items.
                 for l in log:
                     self.stock_add(l, 1)
