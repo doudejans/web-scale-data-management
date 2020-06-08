@@ -44,7 +44,6 @@ class CassandraDB(Database):
         SELECT amount, price FROM stock
         WHERE item_id = %s;
         ''', (item_id,)).one()
-        print(res)
         if res is None:
             return None
         else:
