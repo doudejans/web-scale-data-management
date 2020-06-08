@@ -41,7 +41,10 @@ class PostgresDB(Database):
                WHERE item_id = %s;
                ''', (item_id,))
         res = cur.fetchone()
-        return None if res is None else res[0], res[1]
+        if res is None:
+            return None
+        else:
+            return res[0], res[1]
 
     def stock_subtract(self, item_id, number):
         cur = self.connection.cursor()
