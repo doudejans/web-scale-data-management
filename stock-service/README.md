@@ -33,9 +33,8 @@ This subtracts all items one-by-one. The request needs to have the following jso
 ```
 {
   "items": [
-    {"item_id": ...},
-    {"item_id": ...},
-    {"item_id": ...},
+    "item_id1",
+    "item_id2",
     ...
   ]
 }
