@@ -62,7 +62,7 @@ def create_app(db: Database):
     def batch_subtract():
         content = request.json
         if content is not None:
-            items = map(lambda i: uuid.UUID(i["item_id"]), content["items"])
+            items = map(lambda item: uuid.UUID(item), content["items"])
             success = db.batch_subtract(items)
             if success:
                 return make_response('success', HTTPStatus.OK)
