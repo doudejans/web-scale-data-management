@@ -111,11 +111,13 @@ class CassandraDB(Database):
 
     def batch_subtract(self, items):
         log = []
+        # Subtract all items.
         for item_id in items:
             try:
                 self.stock_subtract(item_id, 1)
                 log.append(item_id)
             except DatabaseException:
+                # Re-add all succeeded subtracted items.
                 for l in log:
                     self.stock_add(l, 1)
                 return False
