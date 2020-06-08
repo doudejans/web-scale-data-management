@@ -18,7 +18,6 @@ class PostgresDB(Database):
                                            user=connection_config["user"],
                                            database=connection_config["database"],
                                            password=connection_config["password"])
-        self.connection.autocommit = True
         psycopg2.extras.register_uuid()
         if setup:
             self.__setup_database(config)
@@ -32,6 +31,7 @@ class PostgresDB(Database):
                         price integer
                     );
                 ''')
+        self.connection.commit()
         pass
 
     def find_stock(self, item_id):
@@ -51,6 +51,7 @@ class PostgresDB(Database):
                            WHERE item_id = %s
                            AND amount >= %s;
                        ''', (number, item_id, number))
+        self.connection.commit()
         return cur.rowcount == 1
 
     def stock_add(self, item_id, number):
@@ -60,6 +61,7 @@ class PostgresDB(Database):
                     SET amount = amount + %s
                     WHERE item_id = %s;
                 ''', (number, item_id))
+        self.connection.commit()
         return cur.rowcount == 1
 
     def create_stock(self, price):
@@ -69,4 +71,20 @@ class PostgresDB(Database):
             INSERT INTO stock (item_id, amount, price)
             VALUES (%s, 0, %s);
         ''', (item_id, price))
+        self.connection.commit()
         return str(item_id)
+
+    def batch_subtract(self, items):
+        try:
+            cur = self.connection.cursor()
+            for item_id in items:
+                cur.execute(f'''
+                    UPDATE stock
+                    SET amount = amount - %s
+                    WHERE item_id = %s;
+                ''', (1, item_id))
+            self.connection.commit()
+            return True
+        except Exception:
+            return False
+

@@ -36,5 +36,5 @@ class Database(object):
         pass
 
     @abc.abstractmethod
-    def rollback(self, transaction_id):
+    def batch_subtract(self, items):
         pass

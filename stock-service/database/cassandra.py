@@ -108,3 +108,15 @@ class CassandraDB(Database):
                SELECT amount FROM stock
                WHERE item_id = %s;
                ''', (item_id,)).one()
+
+    def batch_subtract(self, items):
+        log = []
+        for item_id in items:
+            try:
+                self.stock_subtract(item_id, 1)
+                log.append(item_id)
+            except DatabaseException:
+                for l in log:
+                    self.stock_add(l, 1)
+                return False
+        return True

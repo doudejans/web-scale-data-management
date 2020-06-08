@@ -57,21 +57,16 @@ def create_app(db: Database):
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
-            # Create stock and return the ID.
-
+    # Subtract a batch of items.
     @service.route('/batch/batchSubtract', methods=["POST"])
     def batch_subtract():
         content = request.json
         if content is not None:
-            res = []
-            try:
-                for item in content["items"]:
-                    db.stock_subtract(uuid.UUID(item["item_id"]), 1)
-                    res.append(item["item_id"])
+            items = map(lambda i: uuid.UUID(i["item_id"]), content["items"])
+            success = db.batch_subtract(items)
+            if success:
                 return make_response('success', HTTPStatus.OK)
-            except DatabaseException:
-                for item in res:
-                    db.stock_add(uuid.UUID(item), 1)
+            else:
                 return make_response('failure', HTTPStatus.BAD_REQUEST)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
