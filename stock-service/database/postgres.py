@@ -87,4 +87,3 @@ class PostgresDB(Database):
             return True
         except Exception:
             return False
-
