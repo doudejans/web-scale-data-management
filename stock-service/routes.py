@@ -1,6 +1,7 @@
+import uuid
 from http import HTTPStatus
 
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify, make_response, request
 from database.database import Database
 
 
@@ -23,9 +24,9 @@ def create_app(db: Database):
     # Get stock item availability.
     @service.route('/find/<uuid:item_id>', methods=["GET"])
     def get_availability(item_id):
-        stock, price = db.find_stock(item_id)
-        if stock is not None:
-            return make_response(jsonify({"stock": stock, "price": price}), HTTPStatus.OK)
+        res = db.find_stock(item_id)
+        if res is not None:
+            return make_response(jsonify({"stock": res[0], "price": res[1]}), HTTPStatus.OK)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
@@ -53,6 +54,20 @@ def create_app(db: Database):
         uuid = db.create_stock(price)
         if uuid is not None:
             return make_response(jsonify({"item_id": uuid}), HTTPStatus.OK)
+        else:
+            return make_response('failure', HTTPStatus.BAD_REQUEST)
+
+    # Subtract a batch of items.
+    @service.route('/batch/batchSubtract', methods=["POST"])
+    def batch_subtract():
+        content = request.json
+        if content is not None:
+            items = map(lambda item: uuid.UUID(item), content["items"])
+            success = db.batch_subtract(items)
+            if success:
+                return make_response('success', HTTPStatus.OK)
+            else:
+                return make_response('failure', HTTPStatus.BAD_REQUEST)
         else:
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 

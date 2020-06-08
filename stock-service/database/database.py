@@ -28,3 +28,7 @@ class Database(object):
     @abc.abstractmethod
     def create_stock(self, price):
         pass
+
+    @abc.abstractmethod
+    def batch_subtract(self, items):
+        pass

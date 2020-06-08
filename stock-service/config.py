@@ -9,13 +9,13 @@ def retrieve_config(service_name: str):
     config = {
         "name": service_name,
         "database": {
-            "type": os.getenv("DB_TYPE", "postgres"),
+            "type": os.getenv("DB_TYPE", "cassandra"),
             "setup": os.getenv("DB_SETUP", False),
             "connection": {
                 "host": os.getenv("DB_HOST", "127.0.0.1"),
                 "database": os.getenv("DB_IDENTIFIER", service_name),
                 "user": os.getenv("DB_USER", "postgres"),
-                "password": os.getenv("DB_PASS", "")
+                "password": os.getenv("DB_PASS", "secret")
             }
         },
     }
