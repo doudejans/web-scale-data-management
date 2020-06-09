@@ -37,7 +37,7 @@ def get_payment_status(order_id):
 def initiate_payment(user_id, order_id, amount):
     res = requests.post(f"{PAYMENT_SERVICE_BASE}/pay/{user_id}/{order_id}/{amount}")
 
-    if not res.ok:
+    if not res.status_code == 201:
         raise CouldNotInitiatePayment()
 
 
