@@ -49,8 +49,8 @@ def retract_payment(user_id, order_id):
 
 
 def subtract_stock(items):
-    res = requests.post(f"{STOCK_SERVICE_BASE}/batchSubtract", {
-        'items': items
+    res = requests.post(f"{STOCK_SERVICE_BASE}/batchSubtract", json={
+        'items': [str(item) for item in items]
     })
 
     if not res.ok:

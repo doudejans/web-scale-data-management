@@ -58,7 +58,7 @@ def create_app(db: Database):
             return make_response('failure', HTTPStatus.BAD_REQUEST)
 
     # Subtract a batch of items.
-    @service.route('/batch/batchSubtract', methods=["POST"])
+    @service.route('/batchSubtract', methods=["POST"])
     def batch_subtract():
         content = request.json
         if content is not None:
