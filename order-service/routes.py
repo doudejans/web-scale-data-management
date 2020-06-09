@@ -61,7 +61,7 @@ def create_app(db: Database):
         if found_order:
             return jsonify({'message': 'success'})
         else:
-            return jsonify({'message': 'Order not found'}), 404
+            return jsonify({'message': 'Order or item not found'}), 404
 
     @service.route('/checkout/<uuid:order_id>', methods=['POST'])
     def checkout_order(order_id: UUID):

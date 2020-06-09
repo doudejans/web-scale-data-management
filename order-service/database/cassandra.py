@@ -53,33 +53,54 @@ class CassandraDB(Database):
 
     def add_item_to_order(self, order_id, item_id):
         results = self.connection.execute('''
-        SELECT * FROM orders WHERE order_id = %s
-        ''', (order_id, ))
-
-        if results.one() is None:
-            return False
-
-        self.connection.execute('''
-        UPDATE order_items SET amount = amount + 1 WHERE order_id = %s AND item_id = %s
+        SELECT amount FROM order_items WHERE order_id = %s AND item_id = %s
         ''', (order_id, item_id))
 
-        return True
+        if results.one() is None:
+            exists = self.connection.execute('''
+            SELECT * from orders WHERE order_id = %s
+            ''', (order_id, ))
+
+            if not exists.one():
+                return False
+
+            self.connection.execute('''
+            INSERT INTO order_items (order_id, item_id, amount) VALUES (%s, %s, %s)
+            ''', (order_id, item_id, 1))
+            return True
+        else:
+            amount = results.one()[0]
+            updated_amount = amount + 1
+
+            result = self.connection.execute('''
+            UPDATE order_items SET amount = %s WHERE order_id = %s AND item_id = %s
+            IF amount = %s
+            ''', (updated_amount, order_id, item_id, amount))
+
+            return result.was_applied
 
     def remove_item_from_order(self, order_id, item_id):
         results = self.connection.execute('''
-        SELECT * FROM orders WHERE order_id = %s
-        ''', (order_id, ))
+                SELECT amount FROM order_items WHERE order_id = %s AND item_id = %s
+                ''', (order_id, item_id))
 
         if results.one() is None:
             return False
 
-        self.connection.execute('''
-        UPDATE order_items SET amount = amount - 1 WHERE order_id = %s AND item_id = %s
-        ''', (order_id, item_id))
+        amount = results.one()[0]
 
-        # TODO: what if counter is negative or zero after this?
+        if amount > 0:
+            updated_amount = amount - 1
+            result = self.connection.execute('''
+                    UPDATE order_items SET amount = %s WHERE order_id = %s AND item_id = %s
+                    IF amount = %s
+                    ''', (updated_amount, order_id, item_id, amount))
 
-        return True
+            return result.was_applied
+
+        return False
+
+
 
     def __setup_database(self, config):
         # Create the keyspace
@@ -94,5 +115,5 @@ class CassandraDB(Database):
         ''')
 
         self.connection.execute('''
-        CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount counter, PRIMARY KEY (order_id, item_id))
+        CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount int, PRIMARY KEY (order_id, item_id))
         ''')
