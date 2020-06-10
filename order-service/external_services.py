@@ -13,6 +13,18 @@ class CouldNotRetrieveItemCost(Exception):
     pass
 
 
+class CouldNotInitiatePayment(Exception):
+    pass
+
+
+class CouldNotSubtractStock(Exception):
+    pass
+
+
+class CouldNotRetractPayment(Exception):
+    pass
+
+
 def get_payment_status(order_id):
     res = requests.get(f"{PAYMENT_SERVICE_BASE}/status/{order_id}")
 
@@ -20,6 +32,29 @@ def get_payment_status(order_id):
         return res.json()['paid']
     else:
         raise CouldNotRetrievePaymentStatus()
+
+
+def initiate_payment(user_id, order_id, amount):
+    res = requests.post(f"{PAYMENT_SERVICE_BASE}/pay/{user_id}/{order_id}/{amount}")
+
+    if not res.status_code == 201:
+        raise CouldNotInitiatePayment()
+
+
+def retract_payment(user_id, order_id):
+    res = requests.post(f"{PAYMENT_SERVICE_BASE}/cancel/{user_id}/{order_id}")
+
+    if not res.ok:
+        raise CouldNotRetractPayment()
+
+
+def subtract_stock(items):
+    res = requests.post(f"{STOCK_SERVICE_BASE}/batchSubtract", json={
+        'items': [str(item) for item in items]
+    })
+
+    if not res.ok:
+        raise CouldNotSubtractStock()
 
 
 def get_total_item_cost(items):

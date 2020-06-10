@@ -2,7 +2,9 @@ from uuid import uuid4, UUID
 from flask import Flask, jsonify
 
 from database.database import Database
-from external_services import get_payment_status, get_total_item_cost, CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost
+from external_services import get_payment_status, get_total_item_cost, initiate_payment, subtract_stock, \
+    retract_payment, CouldNotRetractPayment, \
+    CouldNotRetrievePaymentStatus, CouldNotRetrieveItemCost, CouldNotInitiatePayment, CouldNotSubtractStock
 
 
 def create_app(db: Database):
@@ -59,13 +61,32 @@ def create_app(db: Database):
         if found_order:
             return jsonify({'message': 'success'})
         else:
-            return jsonify({'message': 'Order not found'}), 404
+            return jsonify({'message': 'Order or item not found'}), 404
 
     @service.route('/checkout/<uuid:order_id>', methods=['POST'])
     def checkout_order(order_id: UUID):
-        # TODO: Contact stock service
-        # TODO: Contact payment service
-        return jsonify({'message': 'Not implemented yet'})
+        order = db.get_order(order_id)
+
+        if not order:
+            return jsonify({'message': 'Order not found'}), 404
+
+        try:
+            total_cost = get_total_item_cost(order['items'])
+            initiate_payment(order['user_id'], order_id, total_cost)
+            subtract_stock(order['items'])
+
+        except CouldNotRetrieveItemCost:
+            return jsonify({'message': 'Could not retrieve order item cost'}), 500
+        except CouldNotInitiatePayment:
+            return jsonify({'message': 'Payment failed'}), 400
+        except CouldNotSubtractStock:
+            try:
+                retract_payment(order['user_id'], order['order_id'])
+                return jsonify({'message': 'Could not subtract stock'}), 400
+            except CouldNotRetractPayment:
+                return jsonify({'message': 'Checkout transaction failed'}), 500
+
+        return jsonify({'message': 'success'})
 
     return service
 
