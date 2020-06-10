@@ -67,6 +67,9 @@ def create_app(db: Database):
     def checkout_order(order_id: UUID):
         order = db.get_order(order_id)
 
+        if not order:
+            return jsonify({'message': 'Order not found'}), 404
+
         try:
             total_cost = get_total_item_cost(order['items'])
             initiate_payment(order['user_id'], order_id, total_cost)
