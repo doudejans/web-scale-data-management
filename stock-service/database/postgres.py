@@ -78,15 +78,19 @@ class PostgresDB(Database):
         return str(item_id)
 
     def batch_subtract(self, items):
+        cur = self.connection.cursor()
         try:
-            cur = self.connection.cursor()
             for item_id in items:
                 cur.execute(f'''
                     UPDATE stock
                     SET amount = amount - %s
-                    WHERE item_id = %s;
-                ''', (1, item_id))
+                    WHERE item_id = %s
+                    AND amount >= %s;
+                ''', (1, item_id, 1))
+                if cur.rowcount != 1:
+                    raise Exception
             self.connection.commit()
             return True
         except Exception:
+            self.connection.rollback()
             return False
