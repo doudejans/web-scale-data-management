@@ -115,5 +115,5 @@ class CassandraDB(Database):
         ''')
 
         self.connection.execute('''
-        CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount int, PRIMARY KEY (order_id, item_id))
+        CREATE TABLE IF NOT EXISTS order_items (order_id uuid, item_id uuid, amount int, PRIMARY KEY (order_id, item_id)) WITH CLUSTERING ORDER BY (item_id DESC);
         ''')
