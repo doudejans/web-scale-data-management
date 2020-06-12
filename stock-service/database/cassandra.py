@@ -74,17 +74,19 @@ class CassandraDB(Database):
         res = self.get_stock(item_id)
         if res is None:
             return False
-        amount = res.amount
-        # set new stock amount
-        addition = amount + number
-        res = self.connection.execute(f'''
-               UPDATE stock
-               SET amount = %s
-               WHERE item_id = %s
-               IF amount = %s;
-               ''', (addition, item_id, amount)).one()
-
-        return res.applied
+        for attempt in range(5):
+            amount = res.amount
+            # set new stock amount
+            addition = amount + number
+            res = self.connection.execute(f'''
+                UPDATE stock
+                SET amount = %s
+                WHERE item_id = %s
+                IF amount = %s;
+                ''', (addition, item_id, amount)).one()
+            if res.applied:
+                return True
+        return False
 
     def create_stock(self, price):
         item_id = uuid.uuid4()

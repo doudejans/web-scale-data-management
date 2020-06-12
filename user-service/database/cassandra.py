@@ -79,15 +79,18 @@ class CassandraDB(Database):
         ''').one()
         if res is None:
             return False
-        credit = res.credit
-        # set new credit
-        res = self.connection.execute(f'''
-        UPDATE users
-        SET credit = {credit + amount}
-        WHERE user_id = {user_id}
-        IF credit = {credit};
-        ''').one()
-        return res.applied
+        for attempt in range(5):
+            credit = res.credit
+            # set new credit
+            res = self.connection.execute(f'''
+            UPDATE users
+            SET credit = {credit + amount}
+            WHERE user_id = {user_id}
+            IF credit = {credit};
+            ''').one()
+            if res.applied:
+                return True
+        return False
 
     def credit_subtract(self, user_id, amount):
         # get current credit
