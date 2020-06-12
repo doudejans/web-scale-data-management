@@ -111,7 +111,7 @@ class CassandraDB(Database):
         ''')
         self.connection.set_keyspace(config['database'])
         self.connection.execute('''
-        CREATE TABLE IF NOT EXISTS orders (order_id uuid, user_id uuid, PRIMARY KEY (order_id, user_id))
+        CREATE TABLE IF NOT EXISTS orders (order_id uuid, user_id uuid, PRIMARY KEY (order_id))
         ''')
 
         self.connection.execute('''
