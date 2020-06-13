@@ -27,7 +27,7 @@ class CassandraDB(Database):
         # Create the keyspace
         self.connection.execute(f'''
         CREATE KEYSPACE IF NOT EXISTS {config['database']} with replication = {{
-            'class':'SimpleStrategy','replication_factor':1
+            'class':'SimpleStrategy','replication_factor': {config['replication_factor']}
         }};
         ''')
         self.connection.set_keyspace(config['database'])
