@@ -1,7 +1,10 @@
+import os
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster, Session
 from database.database import Database
 
+USER_SERVICE_BASE = os.environ.get("REPLICATION_FACTOR",
+                                   "http://localhost:5000/users")
 
 # This file connects to the cassandra database, it should expose the same
 # functions as the other database models (db_postgres.py).
@@ -106,7 +109,7 @@ class CassandraDB(Database):
         # Create the keyspace
         self.connection.execute(f'''
         CREATE KEYSPACE IF NOT EXISTS {config['database']} with replication = {{
-            'class':'SimpleStrategy','replication_factor':1
+            'class':'SimpleStrategy','replication_factor': {config['replication_factor']}
         }};
         ''')
         self.connection.set_keyspace(config['database'])
