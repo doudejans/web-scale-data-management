@@ -1,10 +1,7 @@
-import os
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster, Session
 from database.database import Database
 
-USER_SERVICE_BASE = os.environ.get("REPLICATION_FACTOR",
-                                   "http://localhost:5000/users")
 
 # This file connects to the cassandra database, it should expose the same
 # functions as the other database models (db_postgres.py).
