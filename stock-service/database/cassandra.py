@@ -22,6 +22,26 @@ class CassandraDB(Database):
         if setup:
             self.__setup_database(connection_config)
         self.connection.set_keyspace(connection_config['database'])
+        self.find_stock_query = self.connection.prepare(f'''
+        SELECT amount, price FROM stock
+        WHERE item_id = ?;
+        ''')
+        self.subtract_stock_query = self.connection.prepare(f'''
+                UPDATE stock
+                SET amount = ?
+                WHERE item_id = ?
+                IF amount = ?;
+        ''')
+        self.add_stock_query = self.connection.prepare(f'''
+                UPDATE stock
+                SET amount = ?
+                WHERE item_id = ?
+                IF amount = ?;
+        ''')
+        self.get_stock_query = self.connection.prepare(f'''
+               SELECT amount FROM stock
+               WHERE item_id = ?;
+        ''')
 
     def __setup_database(self, config):
         # Create the keyspace
@@ -40,10 +60,7 @@ class CassandraDB(Database):
         ''')
 
     def find_stock(self, item_id):
-        res = self.connection.execute(f'''
-        SELECT amount, price FROM stock
-        WHERE item_id = %s;
-        ''', (item_id,)).one()
+        res = self.connection.execute(self.find_stock_query, (item_id,)).one()
         if res is None:
             return None
         else:
@@ -54,35 +71,31 @@ class CassandraDB(Database):
         res = self.get_stock(item_id)
         if res is None:
             return False
-        amount = res.amount
-        # check if subtracted number is too high
-        if number > amount:
-            return False
-        # set new stock amount
-        subtraction = amount - number
-        res = self.connection.execute(f'''
-               UPDATE stock
-               SET amount = %s
-               WHERE item_id = %s
-               IF amount = %s;
-               ''', (subtraction, item_id, amount)).one()
-
-        return res.applied
+        for attempt in range(5):
+            amount = res.amount
+            # check if subtracted number is too high
+            if number > amount:
+                return False
+            # set new stock amount
+            subtraction = amount - number
+            res = self.connection.execute(self.subtract_stock_query, (subtraction, item_id, amount)).one()
+            if res.applied:
+                return True
+        return False
 
     def stock_add(self, item_id, number):
         # get current stock amount
         res = self.get_stock(item_id)
         if res is None:
             return False
-        amount = res.amount
-        # set new stock amount
-        addition = amount + number
-        res = self.connection.execute(f'''
-               UPDATE stock
-               SET amount = %s
-               WHERE item_id = %s
-               IF amount = %s;
-               ''', (addition, item_id, amount)).one()
+        for attempt in range(5):
+            amount = res.amount
+            # set new stock amount
+            addition = amount + number
+            res = self.connection.execute(self.add_stock_query, (addition, item_id, amount)).one()
+            if res.applied:
+                return True
+        return False
 
         return res.applied
 
@@ -95,10 +108,7 @@ class CassandraDB(Database):
         return str(item_id)
 
     def get_stock(self, item_id):
-        return self.connection.execute(f'''
-               SELECT amount FROM stock
-               WHERE item_id = %s;
-               ''', (item_id,)).one()
+        return self.connection.execute(self.get_stock_query, (item_id,)).one()
 
     def batch_subtract(self, items):
         log = []

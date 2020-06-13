@@ -1,6 +1,7 @@
 from cassandra.auth import PlainTextAuthProvider
-from cassandra.cluster import Cluster, Session
+from cassandra.cluster import Cluster, Session, ExecutionProfile, EXEC_PROFILE_DEFAULT
 from database.database import Database, DatabaseException
+from cassandra import ConsistencyLevel
 
 
 # This file connects to the cassandra database, it should expose the same
@@ -10,13 +11,17 @@ class CassandraDB(Database):
     DATABASE = "CASSANDRA"
     connection: Session = None
 
+
     def connect(self, config, setup=False):
+        profile = ExecutionProfile(
+            consistency_level=ConsistencyLevel.LOCAL_QUORUM
+        )
         connection_config = config['connection']
         auth_provider = PlainTextAuthProvider(
             username=connection_config['user'],
             password=connection_config['password']) \
             if 'user' in connection_config else None
-        cluster = Cluster([connection_config['host']], auth_provider=auth_provider)
+        cluster = Cluster([connection_config['host']], auth_provider=auth_provider, execution_profiles={EXEC_PROFILE_DEFAULT: profile})
         self.connection = cluster.connect()
         # TODO: Add specific connection code, if needed.
         if setup:

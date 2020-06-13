@@ -20,28 +20,53 @@ class CassandraDB(Database):
         if setup:
             self.__setup_database(connection_config)
         self.connection.set_keyspace(connection_config['database'])
+        self.add_order_query = self.connection.prepare('''
+        INSERT INTO orders (order_id, user_id) VALUES (?, ?)
+        ''')
+        self.delete_order_query = self.connection.prepare('''
+        DELETE FROM orders WHERE order_id = ?
+        ''')
+        self.get_order_query1 = self.connection.prepare('''
+        SELECT user_id FROM orders WHERE order_id = ?
+        ''')
+        self.get_order_query2 = self.connection.prepare('''
+        SELECT item_id, amount FROM order_items WHERE order_id = ?
+        ''')
+        self.add_item_to_order_query1 = self.connection.prepare('''
+        SELECT amount FROM order_items WHERE order_id = ? AND item_id = ?
+        ''')
+        self.add_item_to_order_query2 = self.connection.prepare('''
+        SELECT * from orders WHERE order_id = ?
+        ''')
+        self.add_item_to_order_query3 = self.connection.prepare('''
+        INSERT INTO order_items (order_id, item_id, amount) VALUES (?, ?, ?)
+        ''')
+        self.add_item_to_order_query4 = self.connection.prepare('''
+        UPDATE order_items SET amount = ? WHERE order_id = ? AND item_id = ?
+        IF amount = ?
+        ''')
+        self.remove_item_from_order_query1 = self.connection.prepare('''
+        SELECT amount FROM order_items WHERE order_id = ? AND item_id = ?
+        ''')
+        self.remove_item_from_order_query2 = self.connection.prepare('''
+        UPDATE order_items SET amount = ? WHERE order_id = ? AND item_id = ?
+        IF amount = ?
+        ''')
+
 
     def add_order(self, order_id, user_id):
-        self.connection.execute('''
-        INSERT INTO orders (order_id, user_id) VALUES (%s, %s)
-        ''', (order_id, user_id))
+        self.connection.execute(self.add_order_query, (order_id, user_id))
 
     def delete_order(self, order_id):
-        self.connection.execute('''
-        DELETE FROM orders WHERE order_id = %s
-        ''', (order_id, ))
+        self.connection.execute(self.delete_order_query, (order_id, ))
 
     def get_order(self, order_id):
-        results = self.connection.execute('''
-        SELECT user_id FROM orders WHERE order_id = %s
-        ''', (order_id, ))
+        results = self.connection.execute(self.get_order_query1, (order_id, ))
         row = results.one()
 
         if row:
             user_id = row[0]
-            items = self.connection.execute('''
-            SELECT item_id, amount FROM order_items WHERE order_id = %s
-            ''', (order_id, ))
+            items = self.connection.execute(self.get_order_query2, (order_id, ))
 
             return {
                 'order_id': order_id,
@@ -52,37 +77,26 @@ class CassandraDB(Database):
             return None
 
     def add_item_to_order(self, order_id, item_id):
-        results = self.connection.execute('''
-        SELECT amount FROM order_items WHERE order_id = %s AND item_id = %s
-        ''', (order_id, item_id))
+        results = self.connection.execute(self.add_item_to_order_query1, (order_id, item_id))
 
         if results.one() is None:
-            exists = self.connection.execute('''
-            SELECT * from orders WHERE order_id = %s
-            ''', (order_id, ))
+            exists = self.connection.execute(self.add_item_to_order_query2, (order_id, ))
 
             if not exists.one():
                 return False
 
-            self.connection.execute('''
-            INSERT INTO order_items (order_id, item_id, amount) VALUES (%s, %s, %s)
-            ''', (order_id, item_id, 1))
+            self.connection.execute(self.add_item_to_order_query3, (order_id, item_id, 1))
             return True
         else:
             amount = results.one()[0]
             updated_amount = amount + 1
 
-            result = self.connection.execute('''
-            UPDATE order_items SET amount = %s WHERE order_id = %s AND item_id = %s
-            IF amount = %s
-            ''', (updated_amount, order_id, item_id, amount))
+            result = self.connection.execute(self.add_item_to_order_query4, (updated_amount, order_id, item_id, amount))
 
             return result.was_applied
 
     def remove_item_from_order(self, order_id, item_id):
-        results = self.connection.execute('''
-                SELECT amount FROM order_items WHERE order_id = %s AND item_id = %s
-                ''', (order_id, item_id))
+        results = self.connection.execute(self.remove_item_from_order_query1, (order_id, item_id))
 
         if results.one() is None:
             return False
@@ -91,10 +105,7 @@ class CassandraDB(Database):
 
         if amount > 0:
             updated_amount = amount - 1
-            result = self.connection.execute('''
-                    UPDATE order_items SET amount = %s WHERE order_id = %s AND item_id = %s
-                    IF amount = %s
-                    ''', (updated_amount, order_id, item_id, amount))
+            result = self.connection.execute(self.remove_item_from_order_query2, (updated_amount, order_id, item_id, amount))
 
             return result.was_applied
 
